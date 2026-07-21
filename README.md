@@ -4,25 +4,32 @@
 > Input: 任意结构的 HTML 单场分析报告 / `--url` 网页 / 一整天的赛前预测数据
 > Output: 3–6 分钟、中文口播、9:16 竖屏、合规标注完整的成片 MP4
 
-把一份「结构任意」的足球分析报告（HTML）或「一整天」的赛前预测数据，自动加工成竖屏解说视频——**数据一进，成片就出**。同一套「解析 → 规划 → 写稿 → 校验 → 配音 → 数字人 → 合成 → 渲染 → 交付」引擎支持三种成片风格。
+把一份「结构任意」的足球分析报告（HTML）或「一整天」的赛前预测数据，自动加工成竖屏解说视频——**数据一进，成片就出**。同一套「解析 → 规划 → 写稿 → 校验 → 配音 → 数字人 → 合成 → 渲染 → 交付」引擎支持两种成片风格。
 
 > 📊 项目报告书（在线阅读）：**https://haxudev.github.io/dgx-spark-video-content-harness/**
 > 源文档见 [`项目报告书/`](项目报告书/)。
 
 ## 成片示例
 
-点击封面播放 H.264 MP4 成片：
+README 内可直接播放（GitHub 原生播放器）；也可进入 [`video/`](video/) 下载 H.264 MP4：
 
-| 单人解说：英格兰 vs 阿根廷（2:52） | 双人播客：法国 vs 西班牙（2:08） |
-|:---:|:---:|
-| [![单人解说成片封面](video/1-cover.jpg)](video/1.mp4?raw=1) | [![双人播客成片封面](video/2-cover.jpg)](video/2.mp4?raw=1) |
+<table>
+<tr>
+<td align="center" width="50%"><b>单人解说：英格兰 vs 阿根廷（2:52）</b></td>
+<td align="center" width="50%"><b>双人播客：法国 vs 西班牙（2:08）</b></td>
+</tr>
+<tr>
+<td><video src="https://github.com/user-attachments/assets/abc51de1-7c48-452b-971a-4c081c17e899" poster="https://raw.githubusercontent.com/haxudev/dgx-spark-video-content-harness/main/video/1-cover.jpg" controls width="100%"></video></td>
+<td><video src="https://github.com/user-attachments/assets/6ec445e9-9590-4ad7-a5fb-90053177ad80" poster="https://raw.githubusercontent.com/haxudev/dgx-spark-video-content-harness/main/video/2-cover.jpg" controls width="100%"></video></td>
+</tr>
+</table>
 
 ## 两种成片风格（同一条生产线）
 
-| 风格 | `ScriptMode` | 形态 | 输入源 |
-|------|--------------|------|--------|
-| 双人播客对谈（本仓库 v2） | `podcast` | 男女双主持「小美 + 小帅」逐场深聊 | 单场 HTML 报告 / `--url` |
-| 单人第一人称解说 | `monologue` | 一位「解局人」悬念口播 | 单场 HTML 报告 / `--url` |
+| 风格                      | `ScriptMode` | 形态                              | 输入源                    |
+| ------------------------- | -------------- | --------------------------------- | ------------------------- |
+| 双人播客对谈（本仓库 v2） | `podcast`    | 男女双主持「小美 + 小帅」逐场深聊 | 单场 HTML 报告 /`--url` |
+| 单人第一人称解说          | `monologue`  | 一位「解局人」悬念口播            | 单场 HTML 报告 /`--url` |
 
 ## 设计要点
 
