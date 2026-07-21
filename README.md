@@ -1,6 +1,6 @@
-# dgx-spark-video-content-harness
+# 基于英伟达Spark的Agent-Driven全自动数据洞察数字人解读视频内容生产线
 
-> **DGX Spark (Qwen3.6-35B) 驱动的 agent-first 足球数据观察短视频自动生产线**
+> **DGX Spark (Qwen3.6-35B) 驱动的 agent-first 数据观察短视频自动生产线**
 > Input: 任意结构的 HTML 单场分析报告 / `--url` 网页 / 一整天的赛前预测数据
 > Output: 3–6 分钟、中文口播、9:16 竖屏、合规标注完整的成片 MP4
 
@@ -8,6 +8,14 @@
 
 > 📊 项目报告书（在线阅读）：**https://haxudev.github.io/dgx-spark-video-content-harness/**
 > 源文档见 [`项目报告书/`](项目报告书/)。
+
+## 成片示例
+
+点击封面播放 H.264 MP4 成片：
+
+| 单人解说：英格兰 vs 阿根廷（2:52） | 双人播客：法国 vs 西班牙（2:08） |
+|:---:|:---:|
+| [![单人解说成片封面](video/1-cover.jpg)](video/1.mp4?raw=1) | [![双人播客成片封面](video/2-cover.jpg)](video/2.mp4?raw=1) |
 
 ## 两种成片风格（同一条生产线）
 
