@@ -10,15 +10,15 @@
 
 **Nvidia DGX Spark 是团队本地的一台私有 AI 推理网关**，以 OpenAI 兼容协议对外服务。它同时承载三种能力，且这三种能力**共享同一批 GPU**：
 
-| 能力 | 角色 | 端点（内网） |
-|------|------|------------|
-| **LLM 大脑** | **Qwen3.6-35B**「思考型」大模型 | `http://gx10.haxu.home:8000/v1` |
+| 能力               | 角色                                             | 端点（内网）                                          |
+| ------------------ | ------------------------------------------------ | ----------------------------------------------------- |
+| **LLM 大脑** | **Qwen3.6-35B**「思考型」大模型            | `http://gx10.haxu.home:8000/v1`                     |
 | **语音合成** | Qwen3-TTS 统一网关（音色注册 / ICL 克隆 / 合成） | `<origin>/api/voices`、`<origin>/v1/audio/speech` |
-| **数字人** | LongCat-Video-Avatar 口播视频生成 | `<host>/avatar`（`LONGCAT_AVATAR_BASE_URL`） |
+| **数字人**   | LongCat-Video-Avatar 口播视频生成                | `<host>/avatar`（`LONGCAT_AVATAR_BASE_URL`）      |
 
 > **核心约束**：大脑、嗓子、脸共用显存——**数字人一开工，同机的 Qwen 大脑就得让出 GPU、暂停约 10 分钟**。这条物理约束贯穿了本项目大量的工程设计（见第五节）。
 
-Qwen3.6 在本项目里出现在**四个位置**：① WRITE 写稿大脑；② MAF 托管 agent 的编排大脑；③ 数字串讲版的网关 TTS；④ 与数字人生成的 GPU 时间片让渡。下面逐一说明。
+Qwen3.6 在本项目里出现在**三个位置**：① WRITE 写稿大脑；② MAF 托管 agent 的编排大脑；③ 与数字人生成的 GPU 时间片让渡。下面逐一说明。
 
 ---
 
@@ -28,14 +28,14 @@ Qwen3.6 在本项目里出现在**四个位置**：① WRITE 写稿大脑；② 
 
 Nvidia DGX Spark 完全通过环境变量注册，实现于 `src/tools/llmClient.ts`：
 
-| 环境变量 | 作用 | 默认 / 行为 |
-|---------|------|-----------|
-| `Nvidia DGX Spark_OPENAI_BASE_URL` | 网关 OpenAI 兼容 base URL | 必填 |
-| `Nvidia DGX Spark_OPENAI_API_KEY` | API Key | 必填 |
-| `Nvidia DGX Spark_MODEL_NAME` | 模型 id（如 `qwen3.6-35b`） | 必填 |
-| `Nvidia DGX Spark_THINKING_EFFORT` | 思考强度，作为 body 额外字段 `thinking_effort` 注入 | 未设/空 → `"none"` |
+| 环境变量                             | 作用                                                 | 默认 / 行为          |
+| ------------------------------------ | ---------------------------------------------------- | -------------------- |
+| `Nvidia DGX Spark_OPENAI_BASE_URL` | 网关 OpenAI 兼容 base URL                            | 必填                 |
+| `Nvidia DGX Spark_OPENAI_API_KEY`  | API Key                                              | 必填                 |
+| `Nvidia DGX Spark_MODEL_NAME`      | 模型 id（如`qwen3.6-35b`）                         | 必填                 |
+| `Nvidia DGX Spark_THINKING_EFFORT` | 思考强度，作为 body 额外字段`thinking_effort` 注入 | 未设/空 →`"none"` |
 
-三个必填变量**全部齐全**时，Nvidia DGX Spark 才注册为 provider，并被排在 **Nvidia DGX Spark → Azure** 的**首位**（优先尝试）。核心构造逻辑（v2/digest 版）：
+三个必填变量**全部齐全**时，Nvidia DGX Spark 才注册为 provider，并被排在 **Nvidia DGX Spark → Azure** 的**首位**（优先尝试）。核心构造逻辑：
 
 ```ts
 // src/tools/llmClient.ts
@@ -62,13 +62,13 @@ Nvidia DGX Spark (Qwen3.6-35B, 主)  →  Azure AI Foundry (gpt-5.4 / DeepSeek-V
 
 ---
 
-## 三、Nvidia DGX Spark Qwen3.6 的四大用途
+## 三、Nvidia DGX Spark Qwen3.6 的三大用途
 
 ### 用途 1 · WRITE 写稿大脑（最核心）
 
-**整条生产线里，Qwen3.6 最主要的工作是「写稿」。** WRITE 阶段是一次「结论先行」的**整篇创作**调用：把一份「市场派生的简报」喂给 Qwen3.6，让它一次性把四幕（或整日串讲）的口播稿全写出来。
+**整条生产线里，Qwen3.6 最主要的工作是「写稿」。** WRITE 阶段是一次「结论先行」的**整篇创作**调用：把一份「市场派生的简报」喂给 Qwen3.6，让它一次性把四幕的口播稿全写出来。
 
-- **入口**：`src/phases/03-write.ts`（v2）/ `src/phases/daily/write-daily.ts`（digest）调用 `chatJson()`。
+- **入口**：`src/phases/03-write.ts` 调用 `chatJson()`。
 - **agent-first**：`retries: 2`（共 3 次），确保 provider 抖动时坚持用 agent 而非退回模板；`creativeSeed` 让每场稿子不雷同；`authoredBy` 落章标记 `agent` 还是 `deterministic`。
 - **约束注入**：system prompt 里写死双主持/单主播角色、直白球赛术语规则、禁抽象隐喻、概率口径（不许赔率）、合规必念句、术语→大白话替换、所有数字念中文、每行 ≤28 字等。
 - **数字保真**：只允许引用简报里可回溯的数字，`sanitiseNumbers` 抑制幻觉数字。
@@ -92,36 +92,7 @@ model    = _env("AGENT_MODEL_NAME",     "Nvidia DGX Spark_MODEL_NAME")
 - **两层大脑各司其职**：agent 大脑（编排、选工具、填参数）是 Nvidia DGX Spark Qwen3.6；harness 内部 WRITE 阶段仍走自己的 Nvidia DGX Spark→Azure 责任链，互不干扰。
 - 为省显存/依赖，只装精简 MAF 依赖（`agent-framework-openai` + `foundry-hosting` + `mcp`），绝不装 `agent-framework[all]` 元包。
 
-### 用途 3 · 数字串讲版：TTS 跑在 Nvidia DGX Spark 网关（注册女主播克隆）
-
-这是单人新闻串讲版的独有设计（提交 `de4f635 digest: run TTS on Nvidia DGX Spark gateway with registered anchor clone`）。
-
-- **音色注册**：`src/tools/gatewayVoice.ts` 把女主播音色以 ICL 克隆注册到 Nvidia DGX Spark 统一网关 `POST <origin>/api/voices`，voice_id = `anchor-xiaomei-zh`，参考音 `~/openclaw-artifacts/custom_voice/anchor_ref.wav`，固定参考文本：
-
-```ts
-// src/tools/gatewayVoice.ts
-export const ANCHOR_REF_TEXT =
-  "大家好，欢迎来到AI球赛观察，我是主持人小美。今天我们一起来看这场比赛的赛前数据和走势分析。";
-```
-
-  注册幂等（HTTP 409 返回 `exists`），用常规 `TTS_API_KEY`/`Nvidia DGX Spark_TTS_API_KEY` 鉴权。CLI：`harness tts-register-voice`（无参即 `ensureAnchorVoice()`，`--list` 列出音色）。
-
-- **合成**：`src/tools/azureSpeech.ts` 的 `gatewayTtsSynth()` POST 到 `<base>/v1/audio/speech`：
-
-```ts
-const wav = await postJsonForBufferWithCurl(url, headers, {
-  model: gatewayTtsModel(),       // Nvidia DGX Spark_TTS_MODEL 或 "tts-1"
-  input: req.text,
-  voice,                          // 注册的 voice_id，如 anchor-xiaomei-zh
-  response_format: "wav",
-  language: gatewayTtsLanguage(), // "Chinese"
-  ...(instruct ? { instructions: instruct } : {}),
-}, timeoutMs);
-```
-
-  provider 名 `Nvidia DGX Sparktts`。`harness daily` 里 `HARNESS_TTS_PROVIDER` 默认 `Nvidia DGX Sparktts`，本地 Qwen 克隆 + Azure 作为掉线兜底；因克隆服务是单 GPU 串行，digest 强制 `HARNESS_TTS_PARALLEL=1` + `QWEN_TTS_TIMEOUT_MS=300000`。
-
-### 用途 4 · 数字人生成与 Qwen 大脑的 GPU 时间片让渡
+### 用途 3 · 数字人生成与 Qwen 大脑的 GPU 时间片让渡
 
 数字人（LongCat-Video-Avatar，「移动的 Nvidia DGX Spark 主播」）在 Nvidia DGX Spark 上生成时**单任务、GPU 独占**，一段 480p ~3.7s 片段要 ~10–12 分钟，**期间同机 Qwen 大脑被暂停以让出显存**，队列排空后再拉起。
 
@@ -142,6 +113,7 @@ Qwen3.6-35B 是**思考型（reasoning）模型**，会产出隐藏的思维链�
    ```ts
    const tokens = p.name === "Nvidia DGX Spark" ? Math.max(baseTokens, baseTokens * 2 + 400) : baseTokens;
    ```
+
    Azure 用原始 `baseTokens`。
 3. **更长超时 + 剥离思维链**：Nvidia DGX Spark 硬超时 300s（Azure 120s）；`extractContent()` 会剥掉 `<think>…</think>` 块，保证下游 `JSON.parse` 只看到答案（早期版本则是「只读 `content`、故意忽略 `reasoning`」）。
 
@@ -173,7 +145,7 @@ env Nvidia DGX Spark_OPENAI_BASE_URL= Nvidia DGX Spark_OPENAI_API_KEY= Nvidia DG
                        Nvidia DGX Spark 单机 GPU 池
    ┌───────────────────────────────────────────────────────┐
    │  Qwen3.6-35B 大脑        Qwen3-TTS 嗓子     LongCat 脸   │
-   │  (WRITE/agent/编排)      (数字串讲配音)     (数字人生成) │
+   │  (WRITE/agent/编排)      (本地语音配音)     (数字人生成) │
    └───────────────────────────────────────────────────────┘
         ▲                                          │
         │  正常 harness run：AVATAR 纯缓存消费      │ 生成时独占 GPU
@@ -191,23 +163,21 @@ env Nvidia DGX Spark_OPENAI_BASE_URL= Nvidia DGX Spark_OPENAI_API_KEY= Nvidia DG
 
 ## 六、Nvidia DGX Spark 相关配置速查
 
-| 变量 | 用途 | 典型值 |
-|------|------|-------|
-| `Nvidia DGX Spark_OPENAI_BASE_URL` | LLM 网关 | `http://gx10.haxu.home:8000/v1` |
-| `Nvidia DGX Spark_OPENAI_API_KEY` | LLM/网关鉴权 | （内网 key） |
-| `Nvidia DGX Spark_MODEL_NAME` | 模型 id | `qwen3.6-35b` |
-| `Nvidia DGX Spark_THINKING_EFFORT` | 思考强度 | `none`（默认）/ `low` |
-| `Nvidia DGX Spark_TTS_VOICE_FEMALE` | 网关女主播 voice_id | `anchor-xiaomei-zh` |
-| `Nvidia DGX Spark_TTS_MODEL` | 网关 TTS 模型 | `tts-1` |
-| `QWEN_TTS_CLONE_REF_FEMALE` | 本地克隆兜底参考音 | `~/openclaw-artifacts/custom_voice/anchor_ref.wav` |
-| `QWEN_TTS_SEED` | TTS 采样种子 | `7` |
-| `LONGCAT_AVATAR_BASE_URL` | 数字人生成端点（**仅 prewarm 需要**） | `https://<host>/avatar` |
-| `AGENT_MODEL_*` | MAF agent 大脑（缺省复用 Nvidia DGX Spark_*） | 复用 Nvidia DGX Spark |
+| 变量                                  | 用途                                          | 典型值                                               |
+| ------------------------------------- | --------------------------------------------- | ---------------------------------------------------- |
+| `Nvidia DGX Spark_OPENAI_BASE_URL`  | LLM 网关                                      | `http://gx10.haxu.home:8000/v1`                    |
+| `Nvidia DGX Spark_OPENAI_API_KEY`   | LLM/网关鉴权                                  | （内网 key）                                         |
+| `Nvidia DGX Spark_MODEL_NAME`       | 模型 id                                       | `qwen3.6-35b`                                      |
+| `Nvidia DGX Spark_THINKING_EFFORT`  | 思考强度                                      | `none`（默认）/ `low`                            |
+| `QWEN_TTS_CLONE_REF_FEMALE`         | 本地克隆兜底参考音                            | `~/openclaw-artifacts/custom_voice/anchor_ref.wav` |
+| `QWEN_TTS_SEED`                     | TTS 采样种子                                  | `7`                                                |
+| `LONGCAT_AVATAR_BASE_URL`           | 数字人生成端点（**仅 prewarm 需要**）   | `https://<host>/avatar`                            |
+| `AGENT_MODEL_*`                     | MAF agent 大脑（缺省复用 Nvidia DGX Spark_*） | 复用 Nvidia DGX Spark                                |
 
 ---
 
 ## 七、小结
 
-- **Qwen3.6 是这条生产线的「大脑」**：主职写稿（WRITE），兼任 MAF agent 的编排大脑，并在数字串讲版里连语音合成也托管到同一张 Nvidia DGX Spark 网关。
+- **Qwen3.6 是这条生产线的「大脑」**：主职写稿（WRITE），兼任 MAF agent 的编排大脑。
 - **思考模型是双刃剑**：质量在线但对逐幕写稿太慢——项目用「置空 Nvidia DGX Spark 变量、回退 Azure 快模型」的运维手法绕开，并为其保留了随时切回的通路。
 - **GPU 是稀缺资源**：大脑、嗓子、脸共享显存的物理现实，逼出了「缓存-only 消费 + 带外生成 + 锁与屏障」这套让渡机制，是本项目最有工程含金量的设计之一。

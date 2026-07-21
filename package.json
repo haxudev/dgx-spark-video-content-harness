@@ -14,19 +14,8 @@
     "build": "tsc -p tsconfig.json",
     "harness": "tsx src/cli.ts",
     "inspect": "tsx src/cli.ts inspect",
-    "pi": "tsx scripts/pi-agent-harness.ts",
-    "pi:prompt": "tsx scripts/pi-agent-harness.ts --dry-run",
     "lint": "tsc -p tsconfig.json --noEmit",
     "test": "node --test --import tsx tests/**/*.test.ts"
-  },
-  "pi": {
-    "skills": [
-      "./skills",
-      "./.pi/skills"
-    ],
-    "prompts": [
-      "./.pi/prompts"
-    ]
   },
   "dependencies": {
     "cheerio": "^1.0.0",

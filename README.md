@@ -9,11 +9,10 @@
 > 📊 项目报告书（在线阅读）：**https://haxudev.github.io/dgx-spark-video-content-harness/**
 > 源文档见 [`项目报告书/`](项目报告书/)。
 
-## 三种成片风格（同一条生产线）
+## 两种成片风格（同一条生产线）
 
 | 风格 | `ScriptMode` | 形态 | 输入源 |
 |------|--------------|------|--------|
-| 单人新闻播报 · 每日「全量串讲」 | `digest` | 一位女主播「小美」串讲当天全部比赛 | Azure Blob 当天全量数据 |
 | 双人播客对谈（本仓库 v2） | `podcast` | 男女双主持「小美 + 小帅」逐场深聊 | 单场 HTML 报告 / `--url` |
 | 单人第一人称解说 | `monologue` | 一位「解局人」悬念口播 | 单场 HTML 报告 / `--url` |
 
@@ -24,7 +23,7 @@
 - **plan-exec-verify 状态机**：14 个阶段各自「计划-执行-校验」，自带重试 / 回滚 / 问题路由 / 升级 `escalation.json`，产物落盘 `out/`，支持断点续跑。
 - **内容与工程解耦**：写作规则、术语、合规话术、拒绝词全由 `config/*.yaml` 管控，业务方不动 TypeScript。
 - **合规优先、默认去投注化**：只做赛前概率观察 / 体育数据讨论，成片不出现彩票、投注、赔率、庄家、推荐、资金等引导性表达；开场收场固定念免责声明；数字「画面给、口播不报」。
-- **Agent-first、CLI 优先、无 MCP**：稳定接口是 `harness` 命令行，pi / Microsoft Agent Framework 托管 agent 都能直接驱动。
+- **Agent-first、CLI 优先、无 MCP**：稳定接口是 `harness` 命令行，任意 coding-agent / Microsoft Agent Framework 托管 agent 都能直接驱动。
 
 ## 六大亮点
 
@@ -44,7 +43,7 @@ INGEST → PLAN → WRITE → VERIFY_TEXT → AUDIT_TALK → TTS → VERIFY_AUDI
 
 ## DGX Spark / Qwen3.6 的角色
 
-**DGX Spark（内网代号 `GX10`）是团队本地的私有 AI 推理网关**，以 OpenAI 兼容协议对外服务，同时承载 **Qwen3.6-35B「思考型」大脑**、**Qwen3-TTS 语音合成** 与 **LongCat-Video-Avatar 数字人**——三者共享同一批 GPU。Qwen3.6 出现在四个位置：① WRITE 写稿大脑；② MAF 托管 agent 的编排大脑；③ digest 版网关 TTS；④ 与数字人生成的 GPU 时间片让渡。详见 [`项目报告书/`](项目报告书/)。
+**DGX Spark（内网代号 `GX10`）是团队本地的私有 AI 推理网关**，以 OpenAI 兼容协议对外服务，同时承载 **Qwen3.6-35B「思考型」大脑**、**Qwen3-TTS 语音合成** 与 **LongCat-Video-Avatar 数字人**——三者共享同一批 GPU。Qwen3.6 出现在三个位置：① WRITE 写稿大脑；② MAF 托管 agent 的编排大脑；③ 与数字人生成的 GPU 时间片让渡。详见 [`项目报告书/`](项目报告书/)。
 
 > ⚠️ 运维要点：思考模型对逐幕 WRITE 太慢（易撞超时），标准做法是**在命令行把 `GX10_*` 变量置空**强制回退 Azure 快模型（`dotenv` 只填未设置的变量，故空字符串会压过 `.env`）。详见 `docs/runbook-execution.md`。
 
@@ -70,29 +69,7 @@ npm run harness -- run inputs/20260522/2026-05-22_ajax-vs-groningen.html
 HARNESS_SKIP_RENDER=1 npm run harness -- run inputs/20260522/2026-05-22_ajax-vs-groningen.html --to POST
 ```
 
-## Pi agent runtime
-
-本项目现在带有 pi coding-agent 兼容层，面向“无 MCP、CLI 优先”的极简 agent 运行方式：
-
-- `AGENTS.md`：pi 自动加载的项目上下文。
-- `.pi/settings.json`：把现有 `skills/` 暴露给 pi，并启用 skill slash command。
-- `.pi/skills/podcast-football-harness/`：专门给 pi 使用的 pipeline 操作 skill。
-- `.pi/prompts/*.md`：`/inspect-report`、`/run-pipeline`、`/fix-escalation` 等 prompt templates。
-- `scripts/pi-agent-harness.ts`：可选的 pi 启动包装器，不引入 MCP 或硬依赖。
-
-安装 pi 后可直接使用：
-
-```bash
-npm install -g --ignore-scripts @earendil-works/pi-coding-agent
-npm run pi:prompt -- --input inputs/20260522/2026-05-22_ajax-vs-groningen.html "inspect this report"
-npm run pi -- --input inputs/20260522/2026-05-22_ajax-vs-groningen.html "inspect this report and fix parser gaps if needed"
-npm run pi -- --mode print "summarize the current pipeline readiness"
-npm run pi -- --mode rpc --no-session
-```
-
-更多细节见 `docs/pi-agent-runtime.md`。
-
-子命令：
+## 子命令
 
 ```bash
 harness run <html|dir>            # 全流程

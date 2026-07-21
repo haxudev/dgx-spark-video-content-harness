@@ -90,7 +90,3 @@ The video carries **no on-screen dialogue subtitles**. Instead a looping **digit
 - Dialogue must remain dual-host (`Anchor` plus `Analyst`) in the default `podcast` mode; the `monologue` mode is the single-host (`Narrator`) exception and skips only the dual-host cadence/balance gates — never the compliance ones.
 - Numbers in dialogue must be traceable to parsed report blocks or config.
 - Keep probability and score-scenario analysis non-actionable; avoid certainty language and action guidance.
-
-## Pi Notes
-
-Pi discovers this file automatically as project context. Project pi resources live in `.pi/`; the root `skills/` directory is also exposed through `.pi/settings.json`.
