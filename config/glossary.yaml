@@ -1,0 +1,33 @@
+# Glossary: 术语 → 通俗解释（首次出现必须解释一次）
+# 用法: WRITE prompt 注入该列表，verify-text 检查 first-use-explained。
+terms:
+  - term: Elo
+    aliases: [Elo评分, ELO]
+    simpleZh: 球队实力评分，数字越高越强
+  - term: EV
+    aliases: ["期望值", "expected value", "期望表现", "E[PnL]"]
+    simpleZh: 长期平均表现差异
+  - term: Kelly
+    aliases: [凯利, Kelly公式, Kelly准则, 半Kelly]
+    simpleZh: 一种风险权重算法
+  - term: upset
+    aliases: [upset specialist]
+    simpleZh: 弱队赢、热门翻车
+  - term: SP
+    aliases: [SP参考值, 公平参考值]
+    simpleZh: 不含额外调整的参考概率
+  - term: vig
+    aliases: [抽水, juice]
+    simpleZh: 数据里额外留出的安全边际
+  - term: implied
+    aliases: [implied probability, 隐含概率]
+    simpleZh: 从数据反推出来的概率
+  - term: H2H
+    aliases: [h2h, 历史交手]
+    simpleZh: 两队过往交手记录
+  - term: xG
+    aliases: [expected goals, 预期进球]
+    simpleZh: 根据射门质量算出的"该进多少球"
+  - term: GBDT
+    aliases: [LightGBM, CatBoost, 集成模型]
+    simpleZh: 一类常用的机器学习模型

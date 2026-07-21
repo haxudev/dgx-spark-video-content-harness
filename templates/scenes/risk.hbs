@@ -1,0 +1,18 @@
+<div class="risk-wrap">
+  <div class="scene-title" style="color:#fda4af">{{title}}</div>
+  <div class="risk-eyebrow">看球之前，先在心里捋一捋 ↓</div>
+
+  <div class="risk-cards">
+    {{#each (riskItems data) as |item|}}
+    <div class="risk-card" style="--accent:{{{item.accent}}}">
+      <div class="head">
+        <span class="ico">{{item.icon}}</span>
+        <span class="ttl">{{item.title}}</span>
+      </div>
+      <ul class="body">
+        {{#each item.bullets}}<li>{{this}}</li>{{/each}}
+      </ul>
+    </div>
+    {{/each}}
+  </div>
+</div>

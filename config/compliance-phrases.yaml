@@ -1,0 +1,33 @@
+# 必念合规短句: placement 决定出现位置
+# - opening: (v2: 开场不再朗读合规短句，仅保留品牌欢迎语)
+# - closing: 最后一幕 (compliance/outro) 必须完整朗读
+# - always-on: 视频常驻角标显示，不强制朗读
+phrases:
+  - id: simulated_prefix
+    text: "本内容仅作赛前概率观察和体育数据讨论"
+    placement: always-on
+    strictExact: false
+    keywords: [赛前概率观察, 体育数据讨论]
+
+  - id: not_advice
+    text: "以上内容仅供体育数据讨论"
+    placement: closing
+    strictExact: false
+    keywords: [体育数据讨论]
+
+  - id: legal_only
+    text: "模型概率不代表比赛结果承诺"
+    placement: closing
+    strictExact: false
+    keywords: [模型概率, 结果承诺]
+
+  - id: minor_ban
+    text: "请理性看球，不作为任何参与决策依据"
+    placement: closing
+    strictExact: false
+    keywords: [理性看球, 参与决策依据]
+
+  - id: header_pill
+    text: "赛前概率观察 · 仅供体育内容讨论"
+    placement: always-on
+    strictExact: true

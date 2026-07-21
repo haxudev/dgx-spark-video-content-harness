@@ -1,0 +1,46 @@
+<div class="scene-eyebrow"><span class="num">③</span>模型概率分布</div>
+<div class="scene-title">{{title}}</div>
+
+<div class="mg-grid">
+  <div class="mg-card">
+    <h3>赛果分布<span class="badge">Result</span></h3>
+    <div class="ec-host" data-mg-1x2></div>
+    {{#with data.market1x2}}
+    {{#each outcomes}}
+      {{#if lead}}<div class="summary">较高情景：<b>{{role}} {{team}} · {{pct}}%</b></div>{{/if}}
+    {{/each}}
+    {{/with}}
+  </div>
+
+  <div class="mg-card">
+    <h3>总进球<span class="badge">Goals</span></h3>
+    <div class="ec-host" data-mg-tg></div>
+    {{#with data.totalGoals}}
+    <div class="summary">期望 <b>{{expected}}</b> 球 · 峰值 <b>{{peakLabel}}球</b> · ≥3球 <b>{{ge3pct}}</b></div>
+    {{/with}}
+  </div>
+
+  <div class="mg-card">
+    <h3>最可能比分<span class="badge">Top 5</span></h3>
+    <div class="cs-top5">
+      {{#with data.correctScore}}
+      {{#each topScores}}
+      <div class="cs-row {{#if lead}}lead{{/if}}">
+        <span class="rank">{{add @index 1}}</span>
+        <span class="score">{{score}}</span>
+        <span class="pct">{{pct}}%</span>
+        <div class="bar-wrap"><div class="bar-fill" data-scale="{{multiply pct 10}}"></div></div>
+      </div>
+      {{/each}}
+      {{/with}}
+    </div>
+  </div>
+
+  <div class="mg-card">
+    <h3>上下半场走势<span class="badge">Half / Full</span></h3>
+    <div class="ec-host" data-mg-htft></div>
+    {{#with data.htft}}
+    <div class="summary">概率高频区间：<b>客 → 客</b>（半全场分布观察，非结果预测）</div>
+    {{/with}}
+  </div>
+</div>

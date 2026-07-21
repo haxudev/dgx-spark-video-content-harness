@@ -1,0 +1,12 @@
+<div class="paragraph-flow">
+  <div class="scene-title">{{title}}</div>
+  {{#each data.paragraphs}}
+    <p>{{trim text 140}}</p>
+  {{/each}}
+  {{#unless data.paragraphs.length}}
+    {{#each data.blocks}}
+      {{#if (eq kind "callout")}}<p>{{trim text 140}}</p>{{/if}}
+      {{#if (eq kind "unknown")}}<p>{{trim text 140}}</p>{{/if}}
+    {{/each}}
+  {{/unless}}
+</div>

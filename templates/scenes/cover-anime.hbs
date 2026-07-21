@@ -1,0 +1,32 @@
+<div class="cover-anime{{#if data.coverImage}} has-img{{/if}}">
+  {{#if data.coverImage}}
+  <div class="cover-anime-bg"><img src="{{data.coverImage}}" alt="" /></div>
+  <div class="cover-anime-scrim"></div>
+  {{/if}}
+  <div class="cover-anime-panel">
+    <div class="cf-meta">
+      <span class="cf-league">{{#if data.hero.league}}{{data.hero.league}}{{else}}{{props.league}}{{/if}}</span>
+      {{#if data.hero.kickoff}}<span class="cf-kick">{{data.hero.kickoff}}</span>{{else}}{{#if props.kickoff}}<span class="cf-kick">{{props.kickoff}}</span>{{/if}}{{/if}}
+    </div>
+    <div class="cf-match">{{title}}</div>
+    {{#with data.market1x2}}
+    <div class="cf-1x2">
+      {{#each outcomes}}
+      <div class="cf-o {{#if lead}}lead{{/if}}">
+        <span class="cf-role">{{role}}</span>
+        <span class="cf-team">{{team}}</span>
+        <span class="cf-pct">{{pct}}%</span>
+      </div>
+      {{/each}}
+    </div>
+    {{/with}}
+    {{#with data.correctScore}}
+    <div class="cf-block">
+      <div class="cf-head">最可能比分</div>
+      <div class="cf-scores">
+        {{#each topScores}}{{#if (lte @index 3)}}<span class="cf-chip"><b>{{score}}</b> {{pct}}%</span>{{/if}}{{/each}}
+      </div>
+    </div>
+    {{/with}}
+  </div>
+</div>

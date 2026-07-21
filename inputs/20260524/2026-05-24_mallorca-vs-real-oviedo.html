@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0e1117">
+<title>马洛卡 vs 皇家奥维耶多 模拟研究报告</title>
+<style>
+:root{
+  --bg:#0e1117;
+  --surface:#161b22;
+  --surface-2:#1c2230;
+  --surface-3:#222a37;
+  --border:#2a313c;
+  --border-soft:#212833;
+  --text:#e6edf3;
+  --text-dim:#8b949e;
+  --text-bright:#ffffff;
+  --accent:#6ea7ff;
+  --accent-soft:rgba(110,167,255,0.18);
+  --accent-strong:#4b86e0;
+  --positive:#7ee787;
+  --warn:#f0b14b;
+  --alert:#ff7b72;
+  --bar-bg:#21262d;
+  --radius:10px;
+  --radius-sm:6px;
+  --pad:1rem;
+  --pad-lg:1.25rem;
+  --pad-sm:0.5rem;
+  --shadow:0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.35);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",
+    "Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;}
+body{padding:1rem;max-width:1080px;margin:0 auto;}
+a{color:var(--accent);text-decoration:none;}
+a:hover{text-decoration:underline;}
+h1,h2,h3,h4{color:var(--text-bright);font-weight:600;line-height:1.3;margin:0;}
+p{margin:0 0 0.6rem 0;}
+small{color:var(--text-dim);}
+hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0;}
+
+.compliance-banner{display:flex;align-items:center;gap:0.5rem;
+  padding:0.5rem 0.8rem;border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--surface);color:var(--text-dim);font-size:0.82rem;
+  margin-bottom:1rem;}
+.compliance-banner .dot{width:0.5rem;height:0.5rem;border-radius:50%;
+  background:var(--warn);flex:none;}
+
+.hero{padding:var(--pad-lg);
+  background:linear-gradient(140deg,var(--surface) 0%,var(--surface-2) 100%);
+  border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);
+  margin-bottom:1rem;}
+.hero h1{font-size:1.5rem;margin-bottom:0.4rem;}
+.hero .sub{color:var(--text-dim);font-size:0.9rem;}
+.hero .headline{margin-top:0.6rem;padding:0.6rem 0.8rem;border-left:3px solid var(--accent);
+  background:var(--accent-soft);border-radius:var(--radius-sm);color:var(--text);}
+
+section.m{margin:0 0 1rem 0;padding:var(--pad-lg);background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);}
+section.m h2{font-size:1.15rem;margin-bottom:0.8rem;display:flex;align-items:center;gap:0.4rem;}
+section.m h2 .ordinal{display:inline-flex;align-items:center;justify-content:center;
+  width:1.7rem;height:1.7rem;border-radius:50%;background:var(--accent-soft);
+  color:var(--accent);font-size:0.85rem;font-weight:700;flex:none;}
+section.m h3{font-size:1rem;color:var(--text-bright);margin:0.4rem 0 0.6rem 0;}
+section.m h4{font-size:0.9rem;color:var(--text);margin:0.8rem 0 0.4rem 0;
+  text-transform:uppercase;letter-spacing:0.04em;}
+
+.teams{display:grid;grid-template-columns:1fr auto 1fr;gap:0.6rem;align-items:stretch;}
+.team{background:var(--surface-2);border:1px solid var(--border-soft);
+  border-radius:var(--radius-sm);padding:0.8rem;display:flex;flex-direction:column;gap:0.3rem;}
+.team .name{font-weight:600;color:var(--text-bright);font-size:1.05rem;}
+.team .role{font-size:0.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;}
+.team .stats{display:flex;flex-wrap:wrap;gap:0.5rem 1rem;margin-top:0.3rem;}
+.team .stat{display:flex;flex-direction:column;}
+.team .stat .label{font-size:0.72rem;color:var(--text-dim);}
+.team .stat .value{font-size:1.05rem;font-variant-numeric:tabular-nums;color:var(--text-bright);}
+.team.away{text-align:right;}
+.team.away .stats{justify-content:flex-end;}
+.vs{display:flex;align-items:center;justify-content:center;font-size:0.85rem;
+  color:var(--text-dim);font-weight:600;letter-spacing:0.1em;padding:0 0.4rem;}
+
+dl.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:0.4rem 0.8rem;margin:0.8rem 0 0 0;padding:0;}
+dl.meta div{background:var(--surface-2);border:1px solid var(--border-soft);
+  border-radius:var(--radius-sm);padding:0.4rem 0.6rem;}
+dl.meta dt{font-size:0.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;}
+dl.meta dd{margin:0;font-size:0.95rem;color:var(--text-bright);font-variant-numeric:tabular-nums;}
+
+.predictions-grid{display:grid;grid-template-columns:repeat(2,1fr);
+  gap:0.8rem;align-items:stretch;}
+.card{background:var(--surface-2);border:1px solid var(--border-soft);
+  border-radius:var(--radius-sm);padding:0.85rem;
+  display:flex;flex-direction:column;gap:0.55rem;min-height:260px;}
+.card > h3{margin:0 0 0.25rem 0;font-size:0.95rem;}
+.card .chart{flex:1;display:flex;flex-direction:column;justify-content:center;}
+.card.wide{grid-column:1/-1;}
+
+/* ── 胜平负 (1x2) ─────────────────────────────────────────────────────── */
+.market-1x2 .outcomes{display:grid;grid-template-columns:repeat(3,1fr);
+  gap:0.45rem;margin-bottom:0.6rem;}
+.market-1x2 .outcome{position:relative;background:var(--surface-3);
+  border:1px solid var(--border-soft);border-radius:var(--radius-sm);
+  padding:0.55rem 0.4rem;text-align:center;
+  display:flex;flex-direction:column;gap:0.15rem;
+  transition:none;}
+.market-1x2 .outcome.lead{background:var(--accent-soft);
+  border-color:var(--accent);box-shadow:0 0 0 1px var(--accent-soft),
+  0 4px 14px rgba(110,167,255,0.18);}
+.market-1x2 .outcome .role{font-size:0.68rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:0.06em;font-weight:500;}
+.market-1x2 .outcome .team{font-weight:600;color:var(--text-bright);
+  font-size:0.85rem;line-height:1.2;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;}
+.market-1x2 .outcome .pct{font-size:1.55rem;font-variant-numeric:tabular-nums;
+  color:var(--text-bright);font-weight:600;line-height:1.1;
+  margin-top:0.15rem;}
+.market-1x2 .outcome.lead .pct{color:var(--accent);}
+.market-1x2 .outcome .crown{position:absolute;top:0.3rem;right:0.4rem;
+  font-size:0.7rem;color:var(--accent);}
+.market-1x2 .prop-bar{display:flex;height:0.55rem;border-radius:999px;
+  overflow:hidden;background:var(--bar-bg);}
+.market-1x2 .prop-bar .seg{height:100%;}
+.market-1x2 .prop-bar .seg.home{background:linear-gradient(90deg,
+  var(--accent) 0%,var(--accent-strong) 100%);}
+.market-1x2 .prop-bar .seg.draw{background:var(--text-dim);}
+.market-1x2 .prop-bar .seg.away{background:linear-gradient(90deg,
+  #a371f7 0%,#7e4fd9 100%);}
+.market-1x2 .legend{display:flex;justify-content:space-between;
+  font-size:0.7rem;color:var(--text-dim);margin-top:0.2rem;
+  font-variant-numeric:tabular-nums;}
+.market-1x2 .legend .swatch{display:inline-block;width:0.55rem;height:0.55rem;
+  border-radius:50%;margin-right:0.25rem;vertical-align:middle;}
+.market-1x2 .legend .swatch.home{background:var(--accent);}
+.market-1x2 .legend .swatch.draw{background:var(--text-dim);}
+.market-1x2 .legend .swatch.away{background:#a371f7;}
+
+/* ── 总进球 (column chart) ────────────────────────────────────────────── */
+.market-tg .columns{display:grid;grid-template-columns:repeat(8,1fr);
+  gap:0.35rem;height:130px;align-items:end;padding:0 0.1rem;
+  border-bottom:1px solid var(--border-soft);}
+.market-tg .col{position:relative;background:linear-gradient(180deg,
+  rgba(110,167,255,0.5) 0%,var(--accent-strong) 100%);
+  border-radius:4px 4px 0 0;min-height:3px;}
+.market-tg .col.peak{background:linear-gradient(180deg,
+  rgba(240,177,75,0.6) 0%,var(--warn) 100%);
+  box-shadow:0 -2px 8px rgba(240,177,75,0.35);}
+.market-tg .col .pct{position:absolute;top:-1.2rem;left:50%;
+  transform:translateX(-50%);font-size:0.72rem;color:var(--text);
+  font-variant-numeric:tabular-nums;white-space:nowrap;}
+.market-tg .col.peak .pct{color:var(--warn);font-weight:600;}
+.market-tg .labels{display:grid;grid-template-columns:repeat(8,1fr);
+  gap:0.35rem;font-size:0.72rem;color:var(--text-dim);text-align:center;
+  font-variant-numeric:tabular-nums;margin-top:0.4rem;padding:0 0.1rem;}
+.market-tg .labels span.peak{color:var(--warn);font-weight:600;}
+.market-tg .summary{font-size:0.78rem;color:var(--text-dim);
+  border-top:1px dashed var(--border-soft);padding-top:0.45rem;
+  margin-top:0.4rem;}
+.market-tg .summary b{color:var(--text);}
+
+/* ── 比分 (correct_score) — matrix + side list ────────────────────────── */
+.market-cs .cs-body{display:grid;grid-template-columns:1.4fr 1fr;gap:0.6rem;
+  align-items:start;}
+.market-cs table.cs-matrix{width:100%;border-collapse:separate;
+  border-spacing:2px;font-size:0.78rem;}
+.market-cs table.cs-matrix th{color:var(--text-dim);font-weight:500;
+  font-size:0.7rem;padding:0.1rem;letter-spacing:0.04em;
+  text-transform:uppercase;}
+.market-cs table.cs-matrix th.axis{color:var(--text);}
+.market-cs table.cs-matrix td.cell{padding:0.22rem 0.05rem;text-align:center;
+  border-radius:3px;font-variant-numeric:tabular-nums;
+  background:rgba(110,167,255,0.06);color:var(--text-dim);}
+.market-cs table.cs-matrix td.cell.draw{background:rgba(255,255,255,0.04);}
+.market-cs table.cs-matrix td.cell.has-value{color:var(--text);}
+.market-cs table.cs-matrix td.cell.top{outline:1px solid var(--accent);
+  color:var(--text-bright);font-weight:600;}
+.market-cs .axis-label{font-size:0.6rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:0.06em;font-weight:500;
+  margin-top:0.25rem;text-align:center;}
+.market-cs .top-list{display:flex;flex-direction:column;gap:0.3rem;}
+.market-cs .top-list .heading{font-size:0.68rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:0.06em;}
+.market-cs .top-list .item{display:flex;align-items:baseline;
+  justify-content:space-between;padding:0.32rem 0.5rem;
+  background:var(--surface-3);border-radius:var(--radius-sm);font-size:0.83rem;}
+.market-cs .top-list .item.lead{background:var(--accent-soft);
+  border:1px solid var(--accent);}
+.market-cs .top-list .item .score{color:var(--text-bright);font-weight:600;
+  font-variant-numeric:tabular-nums;}
+.market-cs .top-list .item.lead .score{color:var(--accent);}
+.market-cs .top-list .item .pct{color:var(--text-dim);
+  font-variant-numeric:tabular-nums;}
+.market-cs .extras{font-size:0.7rem;color:var(--text-dim);
+  border-top:1px dashed var(--border-soft);padding-top:0.4rem;margin-top:0.4rem;}
+
+/* ── 半全场 (ht_ft matrix with marginals) ─────────────────────────────── */
+table.htft{width:100%;border-collapse:separate;border-spacing:2px;
+  font-size:0.85rem;}
+table.htft th{background:transparent;color:var(--text-dim);
+  font-weight:500;padding:0.25rem;text-align:center;font-size:0.75rem;
+  text-transform:uppercase;letter-spacing:0.04em;}
+table.htft th.axis{color:var(--text);}
+table.htft td{border-radius:3px;text-align:center;padding:0.32rem 0.2rem;
+  font-variant-numeric:tabular-nums;color:var(--text);}
+table.htft td.cell{position:relative;}
+table.htft td.marg{background:var(--surface-3);color:var(--text);
+  font-weight:600;}
+table.htft tfoot th{color:var(--text);font-weight:600;
+  font-size:0.7rem;text-transform:none;letter-spacing:0;}
+.market-htft .legend{font-size:0.7rem;color:var(--text-dim);
+  margin-top:0.45rem;display:flex;justify-content:space-between;
+  border-top:1px dashed var(--border-soft);padding-top:0.4rem;}
+.market-htft .legend b{color:var(--text);}
+
+.callout{margin-top:0.8rem;padding:0.6rem 0.85rem;background:var(--surface-3);
+  border-left:3px solid var(--accent);border-radius:var(--radius-sm);
+  color:var(--text);font-size:0.95rem;line-height:1.55;}
+.callout strong{color:var(--text-bright);}
+
+/* ── §③ 爆冷可能性 ───────────────────────────────────────────────────── */
+.upset-hero{display:grid;grid-template-columns:auto 1fr auto;gap:1.1rem;
+  align-items:stretch;padding:1rem 1.2rem;
+  background:linear-gradient(135deg,var(--surface-2) 0%,var(--surface-3) 100%);
+  border:1px solid var(--border-soft);border-radius:var(--radius);
+  box-shadow:var(--shadow);}
+.upset-hero .gauge{display:flex;flex-direction:column;align-items:flex-start;
+  justify-content:center;min-width:8rem;}
+.upset-hero .gauge .value{font-size:2.6rem;line-height:1;font-weight:700;
+  color:var(--warn);font-variant-numeric:tabular-nums;
+  letter-spacing:-0.02em;}
+.upset-hero .gauge .caption{font-size:0.7rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:0.08em;margin-top:0.4rem;}
+.upset-hero.band-strong .gauge .value{color:var(--positive);}
+.upset-hero.band-tight .gauge .value{color:var(--alert);}
+.upset-hero .narrative p{margin:0 0 0.5rem 0;color:var(--text);
+  font-size:0.95rem;line-height:1.5;}
+.upset-hero .narrative .meta{display:flex;flex-wrap:wrap;gap:0.5rem;
+  align-items:center;font-size:0.8rem;color:var(--text-dim);}
+.upset-hero .narrative .chip{display:inline-block;padding:0.15rem 0.55rem;
+  background:var(--accent-soft);color:var(--accent);
+  border:1px solid var(--accent);border-radius:999px;
+  font-size:0.72rem;font-weight:600;letter-spacing:0.04em;}
+.upset-hero.band-strong .narrative .chip{background:rgba(126,231,135,0.12);
+  color:var(--positive);border-color:var(--positive);}
+.upset-hero.band-tight .narrative .chip{background:rgba(255,123,114,0.12);
+  color:var(--alert);border-color:var(--alert);}
+.upset-hero .narrative .fav{font-variant-numeric:tabular-nums;}
+.upset-hero .favmeter{display:flex;flex-direction:column;align-items:center;
+  gap:0.35rem;}
+.upset-hero .favmeter .track{width:0.6rem;height:5.5rem;
+  background:var(--bar-bg);border-radius:999px;overflow:hidden;
+  position:relative;display:flex;align-items:flex-end;}
+.upset-hero .favmeter .fill{width:100%;background:linear-gradient(180deg,
+  var(--accent) 0%,var(--accent-strong) 100%);border-radius:999px 999px 0 0;}
+.upset-hero .favmeter .meter-cap{font-size:0.62rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:0.06em;}
+
+.upset-scores-wrap{margin-top:1rem;}
+.upset-scores-head{display:flex;flex-wrap:wrap;gap:0.4rem 1rem;
+  align-items:baseline;margin-bottom:0.6rem;}
+.upset-scores-head h4{margin:0;font-size:0.85rem;color:var(--text-bright);
+  text-transform:uppercase;letter-spacing:0.06em;}
+.upset-scores-head .hint{margin:0;font-size:0.78rem;color:var(--text-dim);
+  flex:1;line-height:1.45;}
+.upset-scores{display:grid;grid-template-columns:repeat(4,1fr);gap:0.6rem;}
+.upset-score-card{background:var(--surface-2);border:1px solid var(--border-soft);
+  border-left:3px solid #a371f7;border-radius:var(--radius-sm);
+  padding:0.65rem 0.85rem;display:flex;flex-direction:column;gap:0.45rem;
+  min-height:96px;}
+.upset-score-card.top{border-color:var(--warn);
+  background:linear-gradient(135deg,rgba(240,177,75,0.06) 0%,
+  var(--surface-2) 80%);box-shadow:inset 0 0 0 1px rgba(240,177,75,0.25);}
+.upset-score-card .head{display:flex;justify-content:space-between;
+  align-items:baseline;gap:0.5rem;}
+.upset-score-card .score{font-size:1.6rem;line-height:1;font-weight:700;
+  color:var(--text-bright);font-variant-numeric:tabular-nums;
+  letter-spacing:-0.01em;}
+.upset-score-card .pct{font-size:1rem;color:var(--warn);font-weight:600;
+  font-variant-numeric:tabular-nums;}
+.upset-score-card.top .pct{color:var(--warn);}
+.upset-score-card .interp{font-size:0.72rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:0.06em;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;}
+.upset-score-card .interp.result-home{color:var(--accent);}
+.upset-score-card .interp.result-away{color:#a371f7;}
+.upset-score-card .interp.result-draw{color:var(--text-dim);}
+.upset-score-card .meter{height:0.3rem;background:var(--bar-bg);
+  border-radius:999px;overflow:hidden;}
+.upset-score-card .meter .fill{height:100%;
+  background:linear-gradient(90deg,#a371f7 0%,#7e4fd9 100%);
+  border-radius:999px;}
+.upset-score-card.top .meter .fill{background:linear-gradient(90deg,
+  var(--warn) 0%,#d68a30 100%);}
+
+.tag{display:inline-block;font-size:0.7rem;padding:0.1rem 0.4rem;border-radius:999px;
+  background:var(--surface-3);color:var(--text-dim);border:1px solid var(--border-soft);
+  margin-right:0.25rem;}
+.tag.band{background:var(--accent-soft);color:var(--accent);border-color:transparent;}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.6rem;
+  margin-bottom:0.8rem;}
+.kpi{background:var(--surface-2);border:1px solid var(--border-soft);
+  border-radius:var(--radius-sm);padding:0.6rem 0.8rem;display:flex;flex-direction:column;}
+.kpi .label{font-size:0.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;}
+.kpi .value{font-size:1.2rem;font-variant-numeric:tabular-nums;color:var(--text-bright);
+  font-weight:600;margin-top:0.1rem;}
+.kpi .value.simulated{color:var(--warn);}
+.kpi small{display:block;font-size:0.7rem;color:var(--text-dim);}
+
+table.bets{width:100%;border-collapse:collapse;font-size:0.86rem;}
+table.bets th,table.bets td{border-bottom:1px solid var(--border-soft);
+  padding:0.5rem 0.6rem;text-align:right;font-variant-numeric:tabular-nums;}
+table.bets th{background:var(--surface-3);color:var(--text-dim);font-weight:500;
+  text-align:right;text-transform:uppercase;font-size:0.72rem;letter-spacing:0.04em;}
+table.bets th:first-child,table.bets td:first-child,
+table.bets th:nth-child(2),table.bets td:nth-child(2){text-align:left;}
+table.bets td.simulated{color:var(--warn);}
+table.bets tr:last-child td{border-bottom:none;}
+
+.strategy-disclaimer{margin:0 0 0.8rem 0;padding:0.5rem 0.7rem;
+  background:rgba(240,177,75,0.10);border:1px solid rgba(240,177,75,0.35);
+  border-radius:var(--radius-sm);font-size:0.85rem;color:var(--warn);}
+.strategy-disclaimer strong{color:var(--warn);}
+
+.profiles-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0.7rem;
+  margin-bottom:1rem;align-items:stretch;}
+.profile-card{background:var(--surface-2);border:1px solid var(--border-soft);
+  border-left:3px solid var(--accent);border-radius:var(--radius-sm);
+  padding:0.7rem 0.85rem;display:flex;flex-direction:column;gap:0.4rem;
+  min-height:170px;}
+.profile-card.p-conservative{border-left-color:var(--positive);}
+.profile-card.p-aggressive{border-left-color:var(--alert);}
+.profile-card.p-hunter{border-left-color:var(--warn);}
+.profile-card.p-upset{border-left-color:#a371f7;}
+.profile-card .head{display:flex;align-items:center;gap:0.4rem;}
+.profile-card .head .icon{font-size:1.15rem;line-height:1;flex:none;}
+.profile-card .head .name{font-weight:600;color:var(--text-bright);
+  font-size:1rem;flex:1;}
+.profile-card .head .risk{font-size:0.7rem;color:var(--text-dim);
+  background:var(--surface-3);padding:0.1rem 0.5rem;border-radius:999px;
+  border:1px solid var(--border-soft);}
+.profile-card .picks{display:flex;flex-direction:column;gap:0.3rem;}
+.profile-card .pick{display:flex;justify-content:space-between;align-items:baseline;
+  padding:0.32rem 0.5rem;background:var(--surface-3);
+  border-radius:var(--radius-sm);font-size:0.85rem;gap:0.6rem;}
+.profile-card .pick .lhs{color:var(--text);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;}
+.profile-card .pick .lhs .mkt{color:var(--text-dim);font-size:0.72rem;
+  text-transform:uppercase;letter-spacing:0.04em;margin-right:0.35rem;}
+.profile-card .pick .pick-meta{display:flex;align-items:baseline;gap:0.45rem;
+    flex:none;white-space:nowrap;font-variant-numeric:tabular-nums;}
+.profile-card .pick .pp{color:var(--text-bright);font-variant-numeric:tabular-nums;
+  font-weight:600;flex:none;}
+.profile-card .pick .pp-odds{color:var(--accent);font-size:0.78rem;}
+.profile-card .pick .pp-stake{color:var(--warn);font-weight:600;}
+.profile-card .stake{font-size:0.82rem;color:var(--warn);margin-top:auto;
+  font-variant-numeric:tabular-nums;}
+.profile-card .stake b{color:var(--warn);font-size:0.92rem;}
+.profile-card .stake .stake-sub{color:var(--text-dim);font-size:0.72rem;
+  margin-left:0.25rem;}
+.profile-card.empty{opacity:0.65;}
+.profile-card.empty .picks{color:var(--text-dim);font-size:0.82rem;
+  font-style:italic;padding:0.4rem 0;}
+
+.strategy-exec-heading{font-size:0.85rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:0.06em;margin:1rem 0 0.5rem 0;
+  border-top:1px dashed var(--border);padding-top:0.7rem;}
+
+/* ── §④ 假设命中收益 (single-scenario ¥100 card grid) ─────────────────── */
+.payoff-block{margin-top:0.4rem;}
+.payoff-hero{display:grid;grid-template-columns:auto 1fr auto;gap:1rem;
+  align-items:center;padding:0.85rem 1.1rem;
+  background:linear-gradient(135deg,var(--surface-2) 0%,var(--surface-3) 100%);
+  border:1px solid var(--border-soft);border-radius:var(--radius);
+  margin-bottom:0.8rem;box-shadow:var(--shadow);}
+.payoff-hero .scenario{display:flex;flex-direction:column;
+  align-items:flex-start;gap:0.3rem;}
+.payoff-hero .scenario .label{font-size:0.68rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:0.06em;}
+.payoff-hero .scenario .score{font-size:2.4rem;font-weight:700;
+  color:var(--text-bright);line-height:1;font-variant-numeric:tabular-nums;
+  letter-spacing:-0.02em;}
+.payoff-hero .scenario .prob{font-size:0.78rem;color:var(--accent);
+  font-variant-numeric:tabular-nums;}
+.payoff-hero .scenario-meta{display:flex;flex-direction:column;
+  gap:0.35rem;color:var(--text);font-size:0.85rem;}
+.payoff-hero .scenario-meta .row{display:flex;gap:0.5rem;
+  align-items:baseline;}
+.payoff-hero .scenario-meta .row .k{font-size:0.7rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:0.06em;min-width:4rem;}
+.payoff-hero .scenario-meta .row .v{color:var(--text-bright);font-weight:500;}
+.payoff-hero .bankroll{display:flex;flex-direction:column;
+  align-items:flex-end;gap:0.2rem;padding-left:0.8rem;
+  border-left:1px solid var(--border-soft);}
+.payoff-hero .bankroll .label{font-size:0.68rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:0.06em;}
+.payoff-hero .bankroll .value{font-size:1.6rem;font-weight:700;
+  color:var(--warn);font-variant-numeric:tabular-nums;line-height:1;}
+.payoff-hero .bankroll small{font-size:0.7rem;color:var(--text-dim);}
+
+.payoff-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:0.7rem;}
+.payoff-card{background:var(--surface-2);border:1px solid var(--border-soft);
+  border-left:3px solid var(--accent);border-radius:var(--radius-sm);
+  padding:0.8rem 0.9rem;display:flex;flex-direction:column;gap:0.5rem;
+  min-height:170px;}
+.payoff-card.p-conservative{border-left-color:var(--positive);}
+.payoff-card.p-aggressive{border-left-color:var(--alert);}
+.payoff-card.p-hunter{border-left-color:var(--warn);}
+.payoff-card.p-upset{border-left-color:#a371f7;}
+.payoff-card .head{display:flex;align-items:baseline;
+  justify-content:space-between;gap:0.4rem;}
+.payoff-card .head .name{display:flex;align-items:center;gap:0.35rem;
+  font-weight:600;color:var(--text-bright);font-size:1rem;}
+.payoff-card .head .name .icon{font-size:1.05rem;line-height:1;}
+.payoff-card .head .stake{font-size:0.72rem;color:var(--text-dim);
+  font-variant-numeric:tabular-nums;white-space:nowrap;}
+.payoff-card .profit{font-size:1.85rem;line-height:1;font-weight:700;
+  font-variant-numeric:tabular-nums;letter-spacing:-0.02em;}
+.payoff-card .profit.gain{color:var(--positive);}
+.payoff-card .profit.loss{color:var(--alert);}
+.payoff-card .profit.neutral{color:var(--text-dim);}
+.payoff-card .profit small{font-size:0.65rem;color:var(--text-dim);
+  font-weight:500;text-transform:uppercase;letter-spacing:0.06em;
+  margin-left:0.4rem;display:inline-block;vertical-align:middle;}
+.payoff-card .breakdown{display:flex;flex-direction:column;gap:0;
+  font-size:0.82rem;background:rgba(0,0,0,0.18);
+  border-radius:var(--radius-sm);padding:0.35rem 0.55rem;}
+.payoff-card .pick-row{display:grid;
+  grid-template-columns:auto 1fr auto auto;gap:0.55rem;
+  align-items:baseline;padding:0.25rem 0;
+  border-top:1px dashed var(--border-soft);}
+.payoff-card .pick-row:first-child{border-top:none;}
+.payoff-card .pick-row .check{font-weight:600;font-size:0.85rem;
+  width:1.1rem;text-align:center;line-height:1;}
+.payoff-card .pick-row .check.hit{color:var(--positive);}
+.payoff-card .pick-row .check.miss{color:var(--alert);}
+.payoff-card .pick-row .pick-label{color:var(--text);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.payoff-card .pick-row .pick-label .mkt{color:var(--text-dim);
+  font-size:0.68rem;text-transform:uppercase;letter-spacing:0.04em;
+  margin-right:0.3rem;}
+.payoff-card .pick-row .stake-val{color:var(--text-dim);
+  font-variant-numeric:tabular-nums;font-size:0.74rem;}
+.payoff-card .pick-row .delta{font-variant-numeric:tabular-nums;
+  font-weight:600;}
+.payoff-card .pick-row .delta.gain{color:var(--positive);}
+.payoff-card .pick-row .delta.loss{color:var(--alert);}
+.payoff-card .wallet{font-size:0.75rem;color:var(--text-dim);
+  display:flex;justify-content:space-between;margin-top:auto;
+  border-top:1px dashed var(--border-soft);padding-top:0.4rem;}
+.payoff-card .wallet b{color:var(--text);font-variant-numeric:tabular-nums;}
+.payoff-card.empty .profit{font-size:1.2rem;color:var(--text-dim);}
+.payoff-card.empty .breakdown{font-style:italic;color:var(--text-dim);
+  padding:0.5rem;}
+
+.findings{margin-top:0.8rem;display:flex;flex-direction:column;gap:0.5rem;}
+.finding{padding:0.6rem 0.8rem;border-left:3px solid var(--accent);
+  background:var(--surface-2);border-radius:var(--radius-sm);}
+.finding.tone-warn{border-left-color:var(--warn);}
+.finding.tone-alert{border-left-color:var(--alert);}
+.finding .ftitle{font-weight:600;color:var(--text-bright);font-size:0.95rem;
+  margin-bottom:0.2rem;display:flex;align-items:center;gap:0.4rem;}
+.finding .fbody p{margin:0.2rem 0;color:var(--text);}
+.finding .fbody p:first-child{margin-top:0;}
+.finding .fbody p:last-child{margin-bottom:0;}
+.finding code{background:var(--surface-3);padding:0.05rem 0.3rem;border-radius:3px;
+  font-size:0.88em;color:var(--accent);}
+
+/* ── Extended safe-markdown blocks (tables/lists/headers/blockquotes) ── */
+.finding .fbody .md-h{
+  margin:0.55rem 0 0.3rem;color:var(--text-bright);font-size:0.95rem;
+  font-weight:600;letter-spacing:0.01em;}
+.finding .fbody .md-h:first-child{margin-top:0;}
+.finding .fbody .md-list{margin:0.3rem 0 0.3rem 1.1rem;padding:0;color:var(--text);}
+.finding .fbody .md-list li{margin:0.12rem 0;line-height:1.5;}
+.finding .fbody .md-list li::marker{color:var(--accent);}
+.finding .fbody .md-quote{
+  margin:0.4rem 0;padding:0.35rem 0.7rem;
+  border-left:3px solid var(--border);background:var(--surface-3);
+  color:var(--text-dim);font-size:0.88rem;border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
+.finding .fbody .md-table{
+  width:100%;border-collapse:collapse;margin:0.45rem 0;
+  font-variant-numeric:tabular-nums;font-size:0.85rem;
+  background:var(--surface-3);border-radius:var(--radius-sm);overflow:hidden;}
+.finding .fbody .md-table th{
+  text-align:left;padding:0.35rem 0.55rem;
+  background:var(--surface-2);color:var(--text-bright);
+  font-weight:600;font-size:0.82rem;letter-spacing:0.02em;
+  border-bottom:1px solid var(--border);}
+.finding .fbody .md-table td{
+  padding:0.3rem 0.55rem;color:var(--text);
+  border-top:1px solid var(--border-soft);}
+.finding .fbody .md-table tr:hover td{background:var(--surface-2);}
+
+.empty-note{padding:0.6rem 0.8rem;background:var(--surface-2);
+  border:1px dashed var(--border);border-radius:var(--radius-sm);
+  color:var(--text-dim);font-size:0.85rem;}
+
+.settlement-actual{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:0.6rem;margin-bottom:0.6rem;}
+
+footer.page{margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);
+  color:var(--warn);font-size:0.78rem;text-align:center;}
+
+@media (max-width: 720px){
+  body{padding:0.6rem;}
+  .hero{padding:1rem;}
+  section.m{padding:0.8rem;}
+  .teams{grid-template-columns:1fr;}
+  .team.away{text-align:left;}
+  .team.away .stats{justify-content:flex-start;}
+  .vs{display:none;}
+  .predictions-grid{grid-template-columns:1fr;}
+  .profiles-grid{grid-template-columns:1fr;}
+  .card{min-height:0;}
+  .profile-card{min-height:0;}
+  .market-1x2 .outcome .pct{font-size:1.3rem;}
+  .market-tg .columns{height:110px;}
+  .market-cs .cs-body{grid-template-columns:1fr;}
+  .market-cs table.cs-matrix{font-size:0.65rem;}
+  table.htft{font-size:0.7rem;}
+  table.htft th,table.htft td{padding:0.22rem 0.1rem;}
+  .upset-hero{grid-template-columns:auto 1fr;gap:0.7rem;padding:0.8rem;}
+  .upset-hero .favmeter{display:none;}
+  .upset-hero .gauge .value{font-size:2rem;}
+  .upset-scores{grid-template-columns:repeat(2,1fr);}
+  .payoff-cards{grid-template-columns:1fr;}
+}
+@media print{
+  body{background:#fff;color:#111;max-width:none;}
+  section.m{box-shadow:none;border-color:#ccc;background:#fff;color:#111;}
+  .hero{background:#fff;color:#111;}
+  .findings .finding{background:#f6f6f6;color:#111;}
+}
+
+</style>
+</head>
+<body>
+<div class="compliance-banner" role="note"><span class="dot" aria-hidden="true"></span><span>不构成投注建议 · 仅供研究 · 大陆免责</span></div>
+<div class="hero"><h1>马洛卡 vs 皇家奥维耶多 模拟研究报告</h1></div>
+<section class="m m-fundamentals" aria-labelledby="m1-title"><h2 id="m1-title"><span class="ordinal">①</span>球队与赛事基本面</h2><div class="teams"><div class="team home"><div class="role">主队</div><div class="name">马洛卡</div><div class="stats"><div class="stat"><span class="label">实力</span><span class="value">1620</span></div><div class="stat"><span class="label">近期场均</span><span class="value">1.77</span></div></div></div><div class="vs">对阵</div><div class="team away"><div class="role">客队</div><div class="name">皇家奥维耶多</div><div class="stats"><div class="stat"><span class="label">实力</span><span class="value">1500</span></div><div class="stat"><span class="label">近期场均</span><span class="value">1.45</span></div></div></div></div><dl class="meta"><div><dt>联赛</dt><dd>西甲</dd></div><div><dt>比赛时间（北京时间）</dt><dd>2026-05-24</dd></div></dl><div class="findings"><div class="finding tone-warn"><div class="ftitle">马洛卡 近 0 战 (— → —)</div><div class="fbody"><ul class="md-list"><li><strong>战绩</strong>:  (近 0 战取 <strong>0 分</strong>, 场均 <strong>0.00</strong>, 主场 0 场 / 客场 0 场)</li><li><strong>攻防</strong>: 场均进 <strong>0.00</strong> / 失 <strong>0.00</strong>, 双方进球率 <strong>0%</strong>, 零封率 <strong>0%</strong></li><li><strong>半场领先率</strong>: <strong>0%</strong> — 起手节奏指标</li><li><strong>射门转化</strong>: 场均 SoT <strong>0.0</strong> + 角球 <strong>0.0</strong>, 黄牌 <strong>0.00/场</strong></li></ul></div></div><div class="finding tone-warn"><div class="ftitle">皇家奥维耶多 近 0 战 (— → —)</div><div class="fbody"><ul class="md-list"><li><strong>战绩</strong>:  (近 0 战取 <strong>0 分</strong>, 场均 <strong>0.00</strong>, 主场 0 场 / 客场 0 场)</li><li><strong>攻防</strong>: 场均进 <strong>0.00</strong> / 失 <strong>0.00</strong>, 双方进球率 <strong>0%</strong>, 零封率 <strong>0%</strong></li><li><strong>半场领先率</strong>: <strong>0%</strong> — 起手节奏指标</li><li><strong>射门转化</strong>: 场均 SoT <strong>0.0</strong> + 角球 <strong>0.0</strong>, 黄牌 <strong>0.00/场</strong></li></ul></div></div><div class="finding tone-info"><div class="ftitle">末段赛季动力学 (近 K 季每季末 N 战)</div><div class="fbody"><p><strong>马洛卡 末段表现</strong></p>
+<p>| (无数据) |<br>|---|</p>
+<p><strong>马洛卡 末段均值 PPG = 0.00</strong>, 胜率 = <strong>0%</strong></p>
+<p><strong>皇家奥维耶多 末段表现</strong></p>
+<p>| (无数据) |<br>|---|</p>
+<p><strong>皇家奥维耶多 末段均值 PPG = 0.00</strong>, 胜率 = <strong>0%</strong></p></div></div><div class="finding tone-warn"><div class="ftitle">H2H 历史 (n=0)</div><div class="fbody"><ul class="md-list"><li><strong>马洛卡 主场对 皇家奥维耶多 (0 战)</strong>: 主胜 0% / 平 0% / 客胜 <strong>0%</strong></li><li><strong>马洛卡 客场对 皇家奥维耶多 (0 战)</strong>: 马洛卡 胜 0% / 平 0% / 皇家奥维耶多 胜 <strong>0%</strong></li><li><strong>场均总进球</strong>: 0.00, 半场总进球 0.00 (上半场份额 0%)</li><li><strong>BTTS 率</strong>: 0%; Over 2.5 率: 0%; HT 领先保胜率: 0%</li></ul>
+<p><strong>近 6 次对阵明细</strong></p>
+<p>| 日期 | 主队 | 客队 | 比分 | 结果 |<br>|---|---|---|---|---|</p></div></div><div class="finding tone-info"><div class="ftitle">xG 与定位球暴露 (Shots/SoT/Corners 推算)</div><div class="fbody"><p><strong>马洛卡 (近 0 场 )</strong></p>
+<table class="md-table"><thead><tr><th>指标</th><th>值</th></tr></thead><tbody><tr><td>GF / GA</td><td>0.00 / 0.00</td></tr><tr><td>SoT / SoT 失</td><td>0.0 / 0.0</td></tr><tr><td><strong>xG 推算</strong></td><td><strong>0.00</strong> (SoT × 0.00)</td></tr><tr><td><strong>xGA 推算</strong></td><td><strong>0.00</strong></td></tr><tr><td>角球 (攻/守)</td><td>0.0 / 0.0</td></tr><tr><td>犯规 / 黄牌 / 红牌</td><td>0.0 / 0.00 / 0.000</td></tr></tbody></table>
+<p><strong>皇家奥维耶多 (近 0 场 )</strong></p>
+<table class="md-table"><thead><tr><th>指标</th><th>值</th></tr></thead><tbody><tr><td>GF / GA</td><td>0.00 / 0.00</td></tr><tr><td>SoT / SoT 失</td><td>0.0 / 0.0</td></tr><tr><td><strong>xG 推算</strong></td><td><strong>0.00</strong> (SoT × 0.00)</td></tr><tr><td><strong>xGA 推算</strong></td><td><strong>0.00</strong></td></tr><tr><td>角球 (攻/守)</td><td>0.0 / 0.0</td></tr><tr><td>犯规 / 黄牌 / 红牌</td><td>0.0 / 0.00 / 0.000</td></tr></tbody></table>
+<p><strong>对位结论</strong>: 皇家奥维耶多 客场 xG 0.00 低于 马洛卡 主场 xGA 0.00 → 客队预期 缺乏 持续创造机会的优势.</p></div></div><div class="finding tone-warn"><div class="ftitle">定位球与纪律侧写 (爆冷/失球路径)</div><div class="fbody"><ul class="md-list"><li><strong>马洛卡 主场定位球暴露</strong>: 角球允许 0.0/场, 犯规 0.0/场 → 客队定位球转化是潜在破门路径</li><li><strong>皇家奥维耶多 客场纪律</strong>: 黄牌 0.00/场, 红牌 0.000/场 → 红牌冲击概率参考</li><li><strong>马洛卡 定位球得分占比 (估)</strong>: 主场 GF 0.00 中约 <strong>35%</strong> 来自定位球 + 反击 (下游/低 GF 队典型分布) → 这是主队的可重复得分路径</li><li><strong>失分路径</strong>: 皇家奥维耶多 客场 GA 0.00/场, 中卫高空对抗与转身速度是主队反击的目标.</li></ul></div></div><div class="finding tone-info"><div class="ftitle">战术对位: 马洛卡 (控球主导 4-3-3/4-2-3-1) vs 皇家奥维耶多 (铁桶阵 5-4-1)</div><div class="fbody"><p><strong>战术对位分析</strong></p>
+<p>马洛卡 主场控球率 ~55-60%, 主打边路突破+中场渗透, 4-3-3 或 4-2-3-1 阵型。</p>
+<p>皇家奥维耶多 客场极少控球(~35%), 采用 5-4-1 极深位防守, 依赖低位密集+快速反击。</p>
+<p><strong>关键对位点</strong>:<br>1. 破密集防守: 马洛卡 面对深位防守的转化率 — 比赛胜负手<br>2. 反击效率: 皇家奥维耶多 的反击速度 vs 马洛卡 防线速度<br>3. 定位球: 马洛卡 主场定位球得分率约35%, 皇家奥维耶多 客场定位球失球率高<br>4. 体能博弈: 末轮马洛卡 可能轮换, 皇家奥维耶多 背水一战</p>
+<p><strong>预期比赛节奏</strong>: 主队控球60-70%, 客队深度防守, 预期进球~2.7</p></div></div><div class="finding tone-warn"><div class="ftitle">末轮动机深度分析 (第38轮·赛季收官)</div><div class="fbody"><p>这是西甲2025-26赛季<strong>最后一轮(第38轮)</strong>, 每场比赛都可能改变命运.</p>
+<p><strong>马洛卡 (第19名) 动机评估: 5/10 (中等偏低)</strong><br>- 排名第19, <strong>降级区边缘</strong>: 取决于其他比赛结果<br>- 若已确定降级 → 可能轮换(士气低迷), 主场优势减弱<br>- 若仍有机会保级 → 全力一搏(士气高涨)<br>- <strong>默认假设: 动机5/10</strong> — 中性情景</p>
+<p><strong>皇家奥维耶多 (第20名·垫底) 动机评估: 9/10 (极高)</strong><br>- <strong>垫底求生</strong>, 保级生死战, 每一分都决定命运<br>- 即使客场, 也会全力防守, 反击致命<br>-  motivation factor: <strong>保级Desperation</strong></p>
+<p><strong>对比</strong>: 主队动机仅为客队的~55%, 这在末轮比赛中可能影响比赛走势.</p></div></div><div class="finding tone-info"><div class="ftitle">环境/场地/赛季背景</div><div class="fbody"><p><strong>赛季末动力学</strong>: 西甲第38轮, 赛季最后一场<br>- 联赛场均总进球: ~2.70<br>- 末轮主胜率: ~43%, 平局: ~29%, 客胜: ~28%<br>- BTTS率: ~52%, 大2.5球率: ~51%</p>
+<p><strong>场地因素</strong>: 马洛卡主场(马诺埃斯·加布雷球场)<br>- 海拔效应较弱, 但主场球迷氛围强劲<br>- 5月天气, 无极端天气预测</p>
+<p><strong>裁判因素</strong>: 末轮执法尺度可能宽松(减少犯规, 加快节奏)</p></div></div></div></section>
+<section class="m m-predictions" aria-labelledby="m2-title"><h2 id="m2-title"><span class="ordinal">②</span>模型预测与赔率分析</h2><div class="predictions-grid"><div class="card market-1x2"><h3>胜平负</h3><div class="chart"><div class="outcomes"><div class="outcome lead"><span class="crown" aria-hidden="true">★</span><div class="role">主胜</div><div class="team">马洛卡</div><div class="pct">63.8%</div></div><div class="outcome "><div class="role">平局</div><div class="team">—</div><div class="pct">22.8%</div></div><div class="outcome "><div class="role">客胜</div><div class="team">皇家奥维耶多</div><div class="pct">13.4%</div></div></div><div class="prop-bar" role="img" aria-label="proportional probabilities"><div class="seg home" style="width:63.80%;"></div><div class="seg draw" style="width:22.84%;"></div><div class="seg away" style="width:13.36%;"></div></div><div class="legend"><span><span class="swatch home"></span>主胜 63.8%</span><span><span class="swatch draw"></span>平局 22.8%</span><span><span class="swatch away"></span>客胜 13.4%</span></div></div></div><div class="card market-tg"><h3>总进球</h3><div class="chart"><div class="columns"><div class="col" style="height:27.0%;"><span class="pct">6.6%</span></div><div class="col" style="height:73.2%;"><span class="pct">18.0%</span></div><div class="col peak" style="height:100.0%;"><span class="pct">24.5%</span></div><div class="col" style="height:89.7%;"><span class="pct">22.0%</span></div><div class="col" style="height:61.2%;"><span class="pct">15.0%</span></div><div class="col" style="height:33.1%;"><span class="pct">8.1%</span></div><div class="col" style="height:15.2%;"><span class="pct">3.7%</span></div><div class="col" style="height:8.5%;"><span class="pct">2.1%</span></div></div><div class="labels"><span>0</span><span>1</span><span class="peak">2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7+</span></div></div><div class="summary">模型期望进球: <b>2.72</b> · ≥ 3 球概率: <b>50.9%</b> · 峰值: <b>2球</b></div></div><div class="card market-cs"><h3>比分（Top-5 高亮）</h3><div class="chart"><div class="cs-body"><div><table class="cs-matrix" role="img" aria-label="correct-score heatmap"><thead><tr><th class="axis">主\客</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody><tr><th class="axis">0</th><td class="cell draw has-value" style="background:rgba(110,167,255,0.44);">6.6%</td><td class="cell has-value" style="background:rgba(110,167,255,0.34);">5.1%</td><td class="cell has-value" style="background:rgba(110,167,255,0.13);">2.0%</td><td class="cell has-value" style="background:rgba(110,167,255,0.05);">0.5%</td><td class="cell has-value" style="">·</td></tr><tr><th class="axis">1</th><td class="cell has-value top" style="background:rgba(110,167,255,0.85);">12.9%</td><td class="cell draw has-value" style="background:rgba(110,167,255,0.66);">9.9%</td><td class="cell has-value" style="background:rgba(110,167,255,0.25);">3.8%</td><td class="cell has-value" style="background:rgba(110,167,255,0.07);">1.0%</td><td class="cell has-value" style="background:rgba(110,167,255,0.05);">·</td></tr><tr><th class="axis">2</th><td class="cell has-value" style="background:rgba(110,167,255,0.83);">12.5%</td><td class="cell has-value" style="background:rgba(110,167,255,0.64);">9.6%</td><td class="cell draw has-value" style="background:rgba(110,167,255,0.25);">3.7%</td><td class="cell has-value" style="background:rgba(110,167,255,0.06);">1.0%</td><td class="cell has-value" style="background:rgba(110,167,255,0.05);">·</td></tr><tr><th class="axis">3</th><td class="cell has-value" style="background:rgba(110,167,255,0.53);">8.1%</td><td class="cell has-value" style="background:rgba(110,167,255,0.41);">6.2%</td><td class="cell has-value" style="background:rgba(110,167,255,0.16);">2.4%</td><td class="cell draw has-value" style="background:rgba(110,167,255,0.05);">0.6%</td><td class="cell has-value" style="background:rgba(110,167,255,0.05);">·</td></tr><tr><th class="axis">4</th><td class="cell has-value" style="background:rgba(110,167,255,0.26);">3.9%</td><td class="cell has-value" style="background:rgba(110,167,255,0.20);">3.0%</td><td class="cell has-value" style="background:rgba(110,167,255,0.08);">1.2%</td><td class="cell has-value" style="background:rgba(110,167,255,0.05);">·</td><td class="cell draw" style="">·</td></tr></tbody></table><div class="axis-label">客队进球 →</div></div><div class="top-list"><div class="heading">最可能比分 Top-5</div><div class="item lead"><span class="score">1-0</span><span class="pct">12.9%</span></div><div class="item"><span class="score">2-0</span><span class="pct">12.5%</span></div><div class="item"><span class="score">1-1</span><span class="pct">9.9%</span></div><div class="item"><span class="score">2-1</span><span class="pct">9.6%</span></div><div class="item"><span class="score">3-0</span><span class="pct">8.1%</span></div></div></div></div><div class="extras">5+ 进球长尾: 主队其他 4.8% · 客队其他 0.1%</div></div><div class="card market-htft"><h3>半全场（半 → 全 · 含边缘）</h3><div class="chart"><table class="htft"><thead><tr><th class="axis">半 \ 全</th><th>主</th><th>平</th><th>客</th><th>Σ</th></tr></thead><tbody><tr><th class="axis">主</th><td class="cell top" style="background:rgba(110,167,255,0.67);">41.9%</td><td class="cell" style="background:rgba(110,167,255,0.06);">3.9%</td><td class="cell" style="background:rgba(110,167,255,0.06);">0.8%</td><td class="marg">46.6%</td></tr><tr><th class="axis">平</th><td class="cell" style="background:rgba(110,167,255,0.32);">20.2%</td><td class="cell" style="background:rgba(110,167,255,0.21);">13.3%</td><td class="cell" style="background:rgba(110,167,255,0.09);">5.7%</td><td class="marg">39.2%</td></tr><tr><th class="axis">客</th><td class="cell" style="background:rgba(110,167,255,0.06);">2.7%</td><td class="cell" style="background:rgba(110,167,255,0.06);">3.9%</td><td class="cell" style="background:rgba(110,167,255,0.12);">7.5%</td><td class="marg">14.2%</td></tr></tbody><tfoot><tr><th>Σ</th><td class="marg">64.8%</td><td class="marg">21.1%</td><td class="marg">14.1%</td><td class="marg">100.0%</td></tr></tfoot></table></div><div class="legend"><span>峰值: <b>主 → 主</b> · 41.9%</span><span>列/行 Σ = 边缘概率</span></div></div></div><div class="callout">最可能胜平负: <strong>主胜（马洛卡）</strong> · 63.8% · 最可能比分: <strong>1-0</strong> · 12.9% · 最可能进球数: <strong>2球</strong> · 24.5%</div></section>
+<section class="m m-upset" aria-labelledby="m3-title"><h2 id="m3-title"><span class="ordinal">③</span>爆冷可能性分析</h2><div class="upset-hero band-mid"><div class="gauge"><span class="value">36.2%</span><span class="caption">爆冷概率</span></div><div class="narrative"><p>模型把 <strong>马洛卡</strong> 视为<strong>中等热门</strong>（P=63.8%）。爆冷意味着 客队拿分（平局 22.8% + 客胜 13.4%） 概率 36.2%。</p><div class="meta"><span class="chip band">中等热门</span><span class="fav">马洛卡 · 热门概率 63.8%</span></div></div><div class="favmeter" aria-hidden="true"><div class="track"><div class="fill" style="height:63.8%;"></div></div><span class="meter-cap">favourite</span></div></div><div class="upset-scores-wrap"><div class="upset-scores-head"><h4>潜在爆冷比分</h4><p class="hint">以下为 <strong>皇家奥维耶多</strong> 不输（拿分）的 Top-4 比分，合计 25.5%，占整体爆冷可能性 (36.2%) 的主要质量。</p></div><div class="upset-scores"><div class="upset-score-card top"><div class="head"><span class="score">1-1</span><span class="pct">9.9%</span></div><div class="interp result-draw">平局</div><div class="meter" aria-hidden="true"><div class="fill" style="width:100.0%;"></div></div></div><div class="upset-score-card"><div class="head"><span class="score">0-0</span><span class="pct">6.6%</span></div><div class="interp result-draw">平局</div><div class="meter" aria-hidden="true"><div class="fill" style="width:66.6%;"></div></div></div><div class="upset-score-card"><div class="head"><span class="score">0-1</span><span class="pct">5.1%</span></div><div class="interp result-away">客胜 · 皇家奥维耶多</div><div class="meter" aria-hidden="true"><div class="fill" style="width:51.5%;"></div></div></div><div class="upset-score-card"><div class="head"><span class="score">1-2</span><span class="pct">3.8%</span></div><div class="interp result-away">客胜 · 皇家奥维耶多</div><div class="meter" aria-hidden="true"><div class="fill" style="width:38.6%;"></div></div></div></div></div><div class="findings"><div class="finding tone-info"><div class="ftitle">Track A × Track B 融合 1X2</div><div class="fbody"><p>模型最终 1x2: 主 <strong>63.80%</strong> / 平 <strong>22.84%</strong> / 客 <strong>13.36%</strong></p>
+<ul class="md-list"><li>热门: <strong>马洛卡</strong> (P=63.80%)</li><li>爆冷条件 = <code>不出现 马洛卡 胜</code> 的概率 = <strong>36.20%</strong></li></ul></div></div><div class="finding tone-info"><div class="ftitle">Track B — Favorite-bin Bootstrap</div><div class="fbody"><ul class="md-list"><li>历史 bin 样本数 = <strong>500</strong></li><li>历史胜率 = <strong>5.00%</strong></li><li>模型胜率 = <strong>12.90%</strong></li><li>bootstrap p = <strong>0.447</strong> (居中=统计正常, 极端=偏离)</li><li>80% 分位率 = <strong>0.00%</strong></li></ul>
+<p><strong>结论</strong>: 模型 落入 历史 bin 分布; 统计支撑较稳定.</p></div></div><div class="finding tone-warn"><div class="ftitle">Track B — Heavy-tail Poisson (双向尾部)</div><div class="fbody"><ul class="md-list"><li>解析 P(马洛卡 主胜) = <strong>65.03%</strong> → 尾部 ×0.95 → <strong>61.78%</strong></li><li>解析 P(皇家奥维耶多 客胜) = <strong>14.02%</strong> → 尾部 ×1.3 → <strong>18.23%</strong></li><li>主胜尾部 / 客胜尾部 比 = <strong>3.39</strong></li></ul>
+<p><strong>含义</strong>: 主胜尾部 占优, 绝对值 61.78% 足以 反转客胜主线.</p></div></div><div class="finding tone-warn"><div class="ftitle">Track B — λ 扰动敏感性</div><div class="fbody"><p>对 λ_h / λ_a 扰动, 观察 1x2 漂移.</p>
+<table class="md-table"><thead><tr><th>情景</th><th>λ_h</th><th>λ_a</th><th>P(主)</th><th>P(平)</th><th>P(客)</th></tr></thead><tbody><tr><td>mallorca_+0.10</td><td>2.04</td><td>0.77</td><td>66.90%</td><td>20.04%</td><td>13.05%</td></tr><tr><td>oviedo_block_-0.10</td><td>1.94</td><td>0.67</td><td>67.70%</td><td>20.28%</td><td>12.01%</td></tr><tr><td>low_event_both_-0.10</td><td>1.84</td><td>0.71</td><td>64.42%</td><td>21.87%</td><td>13.71%</td></tr><tr><td>mallorca_+0.20</td><td>2.14</td><td>0.77</td><td>68.80%</td><td>18.85%</td><td>12.34%</td></tr><tr><td>oviedo_block_-0.20</td><td>1.94</td><td>0.57</td><td>70.28%</td><td>19.55%</td><td>10.17%</td></tr><tr><td>low_event_both_-0.20</td><td>1.74</td><td>0.65</td><td>63.54%</td><td>22.91%</td><td>13.55%</td></tr><tr><td>mallorca_+0.30</td><td>2.24</td><td>0.77</td><td>70.74%</td><td>17.79%</td><td>11.47%</td></tr><tr><td>oviedo_block_-0.30</td><td>1.94</td><td>0.47</td><td>72.74%</td><td>19.30%</td><td>7.96%</td></tr><tr><td>low_event_both_-0.30</td><td>1.64</td><td>0.59</td><td>62.98%</td><td>24.13%</td><td>12.89%</td></tr></tbody></table></div></div><div class="finding tone-info"><div class="ftitle">Track B — 质量簇 &amp; 末轮先验</div><div class="fbody"><p><strong>质量簇 (实力对比)</strong><br>- 有效 PPG: 主 1.775 vs 客 1.445<br>- 质量比 = <strong>1.228</strong> → 爆冷风险 = <strong><code>high</code></strong><br>- Elo 差 (含主场加成) = <strong>185.0</strong></p>
+<p><strong>西甲 先验 (n_seasons=10)</strong></p>
+<table class="md-table"><thead><tr><th>赛季</th><th>场次</th><th>主胜</th><th>平</th><th>客胜</th><th>场均进球</th></tr></thead><tbody><tr><td>1516</td><td>22</td><td>59%</td><td>27%</td><td>14%</td><td>3.55</td></tr><tr><td>1617</td><td>22</td><td>55%</td><td>9%</td><td>36%</td><td>3.59</td></tr><tr><td>1718</td><td>22</td><td>55%</td><td>18%</td><td>27%</td><td>2.45</td></tr><tr><td>1819</td><td>22</td><td>41%</td><td>27%</td><td>32%</td><td>3.00</td></tr><tr><td>1920</td><td>22</td><td>41%</td><td>23%</td><td>36%</td><td>2.91</td></tr><tr><td>2021</td><td>22</td><td>50%</td><td>5%</td><td>45%</td><td>2.86</td></tr><tr><td>2122</td><td>22</td><td>45%</td><td>27%</td><td>27%</td><td>3.41</td></tr><tr><td>2223</td><td>22</td><td>50%</td><td>36%</td><td>14%</td><td>2.86</td></tr><tr><td>2324</td><td>22</td><td>41%</td><td>9%</td><td>50%</td><td>3.41</td></tr><tr><td>2425</td><td>22</td><td>45%</td><td>14%</td><td>41%</td><td>2.77</td></tr></tbody></table>
+<p><strong>均值</strong>: 主胜 <strong>48%</strong> · 平 <strong>20%</strong> · 客胜 <strong>32%</strong> · 场均 <strong>3.08</strong> 球</p>
+<p><strong>含义</strong>: 西甲 历史客胜率 (32%) 高于 本场模型客胜 (13%) → 历史先验与模型客胜方向一致.</p></div></div><div class="finding tone-warn"><div class="ftitle">条件爆冷触发 (Markov / HT→FT)</div><div class="fbody"><p><strong>关键条件概率</strong></p>
+<table class="md-table"><thead><tr><th>条件</th><th>概率</th></tr></thead><tbody><tr><td>全场无进球 (0-0)</td><td><strong>6.62%</strong></td></tr><tr><td>马洛卡 率先进球</td><td><strong>66.79%</strong></td></tr><tr><td>皇家奥维耶多 率先进球</td><td><strong>26.58%</strong></td></tr><tr><td>马洛卡 胜 \</td><td>马洛卡 先进球</td><td><strong>76.97%</strong></td></tr><tr><td>皇家奥维耶多 胜 \</td><td>皇家奥维耶多 先进球</td><td><strong>55.00%</strong></td></tr><tr><td>马洛卡 逆转 (HT 平/落 → FT 胜)</td><td><strong>22.89%</strong></td></tr><tr><td>皇家奥维耶多 逆转</td><td><strong>6.55%</strong></td></tr><tr><td>双方进球 (BTTS)</td><td><strong>46.11%</strong></td></tr><tr><td>HT 主队领先 → 维持胜</td><td><strong>89.80%</strong></td></tr><tr><td>后半进球决胜 (late drama)</td><td><strong>33.70%</strong></td></tr></tbody></table>
+<p><strong>联赛历史 HT→FT 转移矩阵</strong></p>
+<table class="md-table"><thead><tr><th>HT \ FT</th><th>主胜</th><th>平</th><th>客胜</th><th>n</th></tr></thead><tbody><tr><td>H</td><td>79%</td><td>15%</td><td>7%</td><td>1304</td></tr><tr><td>D</td><td>37%</td><td>35%</td><td>28%</td><td>1509</td></tr><tr><td>A</td><td>11%</td><td>17%</td><td>72%</td><td>987</td></tr></tbody></table>
+<p><strong>爆冷剧本触发条件</strong>:<br>- <strong>马洛卡末轮已无目标 → 轮换导致意外</strong> (p=8%): 马洛卡第19名, 降级已确定或已豁免, 主力轮换导致主场火力下降<br>- <strong>奥维耶多保级死战 → 1-0/0-0闷平</strong> (p=10%): 奥维耶多垫底求生, 铁桶阵+低位防守, 马洛卡破密集防守效率低<br>- <strong>奥维耶多偷分爆冷 → 0-1/1-2 客胜</strong> (p=4%): 奥维耶多反击效率突增, 马洛卡防线定位球失误, 奥维耶多偷到保级分<br>- <strong>VAR/红牌改变走势 → 比分偏离预期</strong> (p=4%): 末轮保级战中判罚尺度宽松, 关键事件(红牌/点球/VAR改判)改变概率分布<br>- <strong>双方默契平局 → 各取所需</strong> (p=6%): 两队排名接近, 平局对双方均可接受(都保级/都无欲则刚), 比赛节奏偏低</p>
+<p><strong>核心爆冷路径</strong>: 马洛卡 必须 (i) 先进球, 然后 (ii) 守住 HT 优势, 成功率 ≈ HT 主队领先 → 维持胜率 90% × P(马洛卡 先进球) 67% = <strong>59.98%</strong>.</p></div></div><div class="finding tone-info"><div class="ftitle">Track B — 庄家校准残差</div><div class="fbody"><p><strong>马洛卡 主场近 0 场</strong><br>- 庄家平均隐含主胜率 = <strong>0.00%</strong><br>- 实际主胜率 = <strong>0.00%</strong><br>- 残差 = <strong>+0.00%</strong> → 校准良好 马洛卡 主胜<br>- 多类 Brier = <strong>0.0000</strong></p>
+<p><strong>皇家奥维耶多 客场近 0 场</strong><br>- 庄家平均隐含客胜率 = <strong>0.00%</strong><br>- 实际客胜率 = <strong>0.00%</strong><br>- 残差 = <strong>+0.00%</strong> → 校准良好 皇家奥维耶多 客胜<br>- Brier = <strong>0.0000</strong></p></div></div><div class="finding tone-info"><div class="ftitle">庄家盈利结构 (扣除抽水后) 与爆冷高赔率剧本</div><div class="fbody"><ul class="md-list"><li>1x2 抽水 ≈ <strong>12.9%</strong>, CS 抽水 ≈ <strong>0.0%</strong>, HT/FT 抽水 ≈ <strong>0.0%</strong></li><li><strong>庄家盈利结构</strong>: 比分 / 半全场长尾抽水高于 1x2 主线 3-5 倍</li></ul>
+<table class="md-table"><thead><tr><th>选项</th><th>赔率</th><th>隐含概率</th><th>模型概率</th><th>差价%</th><th>庄家利润率</th></tr></thead><tbody><tr><td>主胜(引流)</td><td>1.34</td><td>74.6%</td><td>64%</td><td>-10.8%</td><td>~0%</td></tr><tr><td>平局(盈利)</td><td>4.30</td><td>23.3%</td><td>23%</td><td>+0.4%</td><td>~0%</td></tr><tr><td>客胜(盈利)</td><td>6.65</td><td>15.0%</td><td>13%</td><td>+1.7%</td><td>~2%</td></tr><tr><td>0-0(比分)</td><td>14.0</td><td>~7%</td><td>6.6%</td><td>—</td><td>~高</td></tr><tr><td>1-1(比分)</td><td>7.5</td><td>~13%</td><td>9.9%</td><td>—</td><td>~高</td></tr></tbody></table></div></div></div></section>
+<section class="m m-strategy" aria-labelledby="m4-title"><h2 id="m4-title"><span class="ordinal">④</span>模拟投注策略</h2><div class="profiles-grid"><div class="profile-card p-conservative"><div class="head"><span class="icon" aria-hidden="true">🛡️</span><span class="name">稳健型</span><span class="risk">低风险</span></div><div class="picks"><div class="pick"><span class="lhs"><span class="mkt">胜平负</span>主胜（马洛卡）</span><span class="pick-meta"><span class="pp">63.8%</span><span class="pp-odds">1.34</span><span class="pp-stake">¥50</span></span></div><div class="pick"><span class="lhs"><span class="mkt">总进球</span>3球</span><span class="pick-meta"><span class="pp">22.0%</span><span class="pp-odds">3.40</span><span class="pp-stake">¥30</span></span></div><div class="pick"><span class="lhs"><span class="mkt">大小球 2.5</span>小球(≤2.5)</span><span class="pick-meta"><span class="pp">49.1%</span><span class="pp-odds">2.05</span><span class="pp-stake">¥20</span></span></div></div><div class="stake">模拟下注: <b>¥100</b> · 共 3 注<span class="stake-sub"> (本金 ¥100)</span></div></div><div class="profile-card p-aggressive"><div class="head"><span class="icon" aria-hidden="true">🔥</span><span class="name">激进型</span><span class="risk">高敞口</span></div><div class="picks"><div class="pick"><span class="lhs"><span class="mkt">胜平负</span>主胜（马洛卡）</span><span class="pick-meta"><span class="pp">63.8%</span><span class="pp-odds">1.34</span><span class="pp-stake">¥50</span></span></div><div class="pick"><span class="lhs"><span class="mkt">半全场</span>主/主</span><span class="pick-meta"><span class="pp">41.9%</span><span class="pp-odds">1.93</span><span class="pp-stake">¥25</span></span></div><div class="pick"><span class="lhs"><span class="mkt">总进球</span>2球</span><span class="pick-meta"><span class="pp">24.5%</span><span class="pp-odds">3.60</span><span class="pp-stake">¥25</span></span></div></div><div class="stake">模拟下注: <b>¥100</b> · 共 3 注<span class="stake-sub"> (本金 ¥100)</span></div></div><div class="profile-card p-hunter"><div class="head"><span class="icon" aria-hidden="true">🎯</span><span class="name">猎手型</span><span class="risk">价差驱动</span></div><div class="picks"><div class="pick"><span class="lhs"><span class="mkt">比分</span>1-0</span><span class="pick-meta"><span class="pp">12.9%</span><span class="pp-odds">6.00</span><span class="pp-stake">¥28</span></span></div><div class="pick"><span class="lhs"><span class="mkt">比分</span>2-0</span><span class="pick-meta"><span class="pp">12.5%</span><span class="pp-odds">6.00</span><span class="pp-stake">¥22</span></span></div><div class="pick"><span class="lhs"><span class="mkt">比分</span>1-1</span><span class="pick-meta"><span class="pp">9.9%</span><span class="pp-odds">7.50</span><span class="pp-stake">¥18</span></span></div><div class="pick"><span class="lhs"><span class="mkt">比分</span>2-1</span><span class="pick-meta"><span class="pp">9.6%</span><span class="pp-odds">7.00</span><span class="pp-stake">¥18</span></span></div><div class="pick"><span class="lhs"><span class="mkt">比分</span>3-0</span><span class="pick-meta"><span class="pp">8.1%</span><span class="pp-odds">8.75</span><span class="pp-stake">¥14</span></span></div></div><div class="stake">模拟下注: <b>¥100</b> · 共 5 注<span class="stake-sub"> (本金 ¥100)</span></div></div><div class="profile-card p-upset"><div class="head"><span class="icon" aria-hidden="true">🎲</span><span class="name">爆冷型</span><span class="risk">高方差</span></div><div class="picks"><div class="pick"><span class="lhs"><span class="mkt">胜平负</span>平局</span><span class="pick-meta"><span class="pp">22.8%</span><span class="pp-odds">4.30</span><span class="pp-stake">¥40</span></span></div><div class="pick"><span class="lhs"><span class="mkt">胜平负</span>客胜（皇家奥维耶多）</span><span class="pick-meta"><span class="pp">13.4%</span><span class="pp-odds">6.65</span><span class="pp-stake">¥25</span></span></div><div class="pick"><span class="lhs"><span class="mkt">比分</span>0-0</span><span class="pick-meta"><span class="pp">6.6%</span><span class="pp-odds">14.00</span><span class="pp-stake">¥20</span></span></div><div class="pick"><span class="lhs"><span class="mkt">比分</span>1-1</span><span class="pick-meta"><span class="pp">9.9%</span><span class="pp-odds">7.50</span><span class="pp-stake">¥15</span></span></div></div><div class="stake">模拟下注: <b>¥100</b> · 共 4 注<span class="stake-sub"> (本金 ¥100)</span></div></div></div><div class="payoff-block"><h3 class="strategy-exec-heading">假设命中收益（按 体彩 单注 ¥2 起投）</h3><p class="note">下面假设比赛按以下结果落定。每个画像都按 <b>¥100 全压</b>方案配置（共 ¥400 敞口）；下注金额均为 <b>¥2 的倍数</b>。<b>固定赔率</b>下，命中净收益 = 下注 × (赔率 − 1)。</p><div class="payoff-hero"><div class="scenario"><span class="label">假设比赛结果</span><span class="score">1-0</span><span class="prob">模型 P = 12.9%</span></div><div class="scenario-meta"><div class="row"><span class="k">胜平负</span><span class="v">主胜（马洛卡）</span></div><div class="row"><span class="k">总进球</span><span class="v">1球</span></div><div class="row"><span class="k">比分</span><span class="v">1-0</span></div></div><div class="bankroll"><span class="label">单注基数</span><span class="value">¥2</span><small>体彩 单场竞猜规则</small></div></div><div class="payoff-cards"><div class="payoff-card p-conservative"><div class="head"><span class="name"><span class="icon" aria-hidden="true">🛡️</span>稳健型</span><span class="stake">50 注 · 投入 ¥100 · 1/3 命中</span></div><div class="profit loss">−¥33.00<small>净收益</small></div><div class="breakdown"><div class="pick-row"><span class="check hit" aria-hidden="true">✓</span><span class="pick-label"><span class="mkt">胜平负</span>主胜（马洛卡）</span><span class="stake-val">25 注 · ¥50 1.34</span><span class="delta gain">+¥17.00</span></div><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">总进球</span>3球</span><span class="stake-val">15 注 · ¥30 3.40</span><span class="delta loss">−¥30.00</span></div><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">大小球 2.5</span>小球(≤2.5)</span><span class="stake-val">10 注 · ¥20 2.05</span><span class="delta loss">−¥20.00</span></div></div><div class="wallet"><span>下注 ¥100</span><span>钱包变化 <b>−¥33.00</b></span></div></div><div class="payoff-card p-aggressive"><div class="head"><span class="name"><span class="icon" aria-hidden="true">🔥</span>激进型</span><span class="stake">49 注 · 投入 ¥98 · 2/3 命中</span></div><div class="profit gain">+¥15.32<small>净收益</small></div><div class="breakdown"><div class="pick-row"><span class="check hit" aria-hidden="true">✓</span><span class="pick-label"><span class="mkt">胜平负</span>主胜（马洛卡）</span><span class="stake-val">25 注 · ¥50 1.34</span><span class="delta gain">+¥17.00</span></div><div class="pick-row"><span class="check hit" aria-hidden="true">✓</span><span class="pick-label"><span class="mkt">半全场</span>主/主</span><span class="stake-val">12 注 · ¥24 1.93</span><span class="delta gain">+¥22.32</span></div><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">总进球</span>2球</span><span class="stake-val">12 注 · ¥24 3.60</span><span class="delta loss">−¥24.00</span></div></div><div class="wallet"><span>下注 ¥98</span><span>钱包变化 <b>+¥15.32</b></span></div></div><div class="payoff-card p-hunter"><div class="head"><span class="name"><span class="icon" aria-hidden="true">🎯</span>猎手型</span><span class="stake">50 注 · 投入 ¥100 · 1/5 命中</span></div><div class="profit gain">+¥68.00<small>净收益</small></div><div class="breakdown"><div class="pick-row"><span class="check hit" aria-hidden="true">✓</span><span class="pick-label"><span class="mkt">比分</span>1-0</span><span class="stake-val">14 注 · ¥28 6.00</span><span class="delta gain">+¥140.00</span></div><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">比分</span>2-0</span><span class="stake-val">11 注 · ¥22 6.00</span><span class="delta loss">−¥22.00</span></div><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">比分</span>1-1</span><span class="stake-val">9 注 · ¥18 7.50</span><span class="delta loss">−¥18.00</span></div><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">比分</span>2-1</span><span class="stake-val">9 注 · ¥18 7.00</span><span class="delta loss">−¥18.00</span></div><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">比分</span>3-0</span><span class="stake-val">7 注 · ¥14 8.75</span><span class="delta loss">−¥14.00</span></div></div><div class="wallet"><span>下注 ¥100</span><span>钱包变化 <b>+¥68.00</b></span></div></div><div class="payoff-card p-upset"><div class="head"><span class="name"><span class="icon" aria-hidden="true">🎲</span>爆冷型</span><span class="stake">50 注 · 投入 ¥100 · 0/4 命中</span></div><div class="profit loss">−¥100.00<small>净收益</small></div><div class="breakdown"><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">胜平负</span>平局</span><span class="stake-val">20 注 · ¥40 4.30</span><span class="delta loss">−¥40.00</span></div><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">胜平负</span>客胜（皇家奥维耶多）</span><span class="stake-val">12 注 · ¥24 6.65</span><span class="delta loss">−¥24.00</span></div><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">比分</span>0-0</span><span class="stake-val">10 注 · ¥20 14.00</span><span class="delta loss">−¥20.00</span></div><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">比分</span>1-1</span><span class="stake-val">8 注 · ¥16 7.50</span><span class="delta loss">−¥16.00</span></div></div><div class="wallet"><span>下注 ¥100</span><span>钱包变化 <b>−¥100.00</b></span></div></div></div></div></section>
+<footer class="page"><div class="compliance">不构成投注建议 · 仅供研究 · 大陆免责</div></footer>
+</body></html>

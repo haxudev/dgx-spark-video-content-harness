@@ -1,0 +1,34 @@
+<div class="scene-eyebrow"><span class="num">④</span>模型情景观察</div>
+<div class="scene-title">{{title}}</div>
+
+<div class="strat-wrap">
+  {{#with data.strategy}}
+  <div class="strat-grid">
+    {{#each profiles}}
+    <div class="strat-card {{#if (eq name '稳健型')}}safe{{/if}}{{#if (eq name '激进型')}}aggr{{/if}}{{#if (eq name '猎手型')}}hunt{{/if}}{{#if (eq name '爆冷型')}}upset{{/if}}">
+      <div class="head">
+        <span class="icon">{{icon}}</span>
+        <span class="name">{{name}}</span>
+        <span class="risk">{{risk}}</span>
+      </div>
+      <div class="tagline">{{tagline}}</div>
+      <div class="picks">
+        {{#each picks}}
+        <div class="pick">
+          <div class="pick-l">
+            <span class="pick-market">{{market}}</span>
+            <span class="pick-option">{{option}}</span>
+          </div>
+          <div class="pick-r">
+            <span class="pick-pp">{{pp}}</span>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+      <div class="total">仅作模型分布参考</div>
+    </div>
+    {{/each}}
+  </div>
+
+  {{/with}}
+</div>

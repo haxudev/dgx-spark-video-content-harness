@@ -1,0 +1,99 @@
+# podcast-football hosted agent — local WSL Docker runner.
+#
+#   docker compose build
+#   docker compose up
+#
+# The container serves the Microsoft Agent Framework "harness agent" over the
+# Foundry RESPONSES protocol (POST /responses) on port 8088, fetches a report
+# URL, runs the full pipeline, and writes final.mp4 into the bind-mounted ./out.
+services:
+  football-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: podcast-football-agent:latest
+    container_name: podcast-football-agent
+
+    # Host networking is the simplest way for the container to resolve and reach
+    # gx10.haxu.home (LLM :8000 / TTS :8091) through the host's DNS + LAN — the
+    # recommended default on native Docker inside WSL2. With host networking the
+    # agent binds AGENT_PORT directly on the host, so `ports:` is not used.
+    network_mode: host
+
+    # GPU passthrough for the RENDER phase. hyperframes captures frames by
+    # rasterising the 1080×1920 composition in headless Chrome; without a GPU it
+    # falls back to *software* raster (`browserGpuMode auto → software`), which
+    # CPU-saturates ~6 workers and dominates wall time. Mapping the host Intel
+    # iGPU (/dev/dri/renderD128) + forcing PRODUCER_BROWSER_GPU_MODE=hardware
+    # offloads raster to the iGPU — measured ~1.55× faster render (210s→135s for
+    # a 223s/30fps composition) with zero quality change. No image rebuild needed
+    # (hyperframes reads PRODUCER_BROWSER_GPU_MODE straight from the environment).
+    # Remove this block on hosts without /dev/dri; render then degrades to software.
+    devices:
+      - /dev/dri:/dev/dri
+
+    # Reuse the existing harness credentials (GX10_* / AZURE_*). The agent brain
+    # (qwen3.6-35b) defaults to the same GX10 endpoint; override with AGENT_MODEL_*.
+    env_file:
+      - .env
+
+    environment:
+      # Forced container-correct values (override anything from env_file/.env).
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium
+      HARNESS_DIR: /app
+      HARNESS_WORK_DIR: /app/out
+      HARNESS_BIN: node /app/dist/cli.js
+      AGENT_HOST: 0.0.0.0
+      AGENT_PORT: ${AGENT_PORT:-8088}
+      OTEL_SDK_DISABLED: "true"
+      # GPU-accelerate hyperframes' headless-Chrome frame capture (see devices: above).
+      # hardware = use the mapped /dev/dri iGPU for page raster instead of software.
+      PRODUCER_BROWSER_GPU_MODE: ${PRODUCER_BROWSER_GPU_MODE:-hardware}
+      # Render at 24fps (vs 30): −20% frames → ~−20% RENDER wall time. Talking-head
+      # data podcast is visually indistinguishable at 24fps. Combine with the iGPU
+      # raster above for the bulk of the render speedup.
+      HARNESS_RENDER_FPS: ${HARNESS_RENDER_FPS:-24}
+      # Soft script-length target fed to PLAN/WRITE (durationPolicy().targetSec).
+      # Biases the agent toward a ≤180s program (≈160s aim) — fewer frames to
+      # render, shorter TTS. NOT a hard gate: VERIFY_AV still only checks A/V sync.
+      HARNESS_TARGET_DURATION_SEC: ${HARNESS_TARGET_DURATION_SEC:-160}
+      # TTS chain: local Qwen3-TTS FIRST (nuc.haxu.home:8568 named voices /v1/tts,
+      # :8569 voice clone), then Azure Speech fallback, then sine stub. GX10 is
+      # retired and never serves TTS. ("qwen" == "auto": local Qwen → Azure → stub;
+      # "azure" would skip Qwen.) Endpoint/keys come from .env (QWEN_TTS_*).
+      HARNESS_TTS_PROVIDER: ${HARNESS_TTS_PROVIDER:-qwen}
+      # WRITE-phase LLM provider. This container's harness brain defaults to the
+      # local GX10 qwen3.6-35b (same endpoint as the MAF orchestration brain);
+      # Azure OpenAI stays as an automatic fallback if GX10 is unreachable.
+      # "gx10" == GX10 primary + Azure fallback. Override to "azure" to prefer Azure.
+      HARNESS_LLM_PROVIDER: ${HARNESS_LLM_PROVIDER:-gx10}
+      # Bottom digital-human presenter (LongCat-Video-Avatar). The pipeline is
+      # CACHE-ONLY: the AVATAR phase consumes pre-generated clips baked into the
+      # image at /app/assets/avatar-clips and NEVER calls longcat, so a run never
+      # pauses the qwen brain. LONGCAT_AVATAR_BASE_URL is only used by the
+      # out-of-band `avatar-prewarm` command (run on the host, then commit clips).
+      LONGCAT_AVATAR_BASE_URL: ${LONGCAT_AVATAR_BASE_URL:-}
+      LONGCAT_API_KEY: ${LONGCAT_API_KEY:-}
+      HARNESS_AVATAR_ASSET_DIR: /app/avatar-assets
+      HARNESS_AGENT_JOB_TIMEOUT: ${HARNESS_AGENT_JOB_TIMEOUT:-5400}
+
+    volumes:
+      - ./out:/app/out          # final.mp4 + all per-run artifacts land here
+      - ./inputs:/app/inputs    # fetched report HTML is cached here
+      - ./custom_voice:/app/custom_voice:ro   # voice-clone reference wavs (--clone-ref /app/custom_voice/<file>.wav)
+      - ${PODCAST_AVATAR_DIR:-/home/nuc/openclaw-artifacts/podcast_avator}:/app/avatar-assets:ro  # two-people / single-people avatar source images
+
+    restart: unless-stopped
+
+# ──────────────────────────────────────────────────────────────────────────
+# Alternative if host networking is unavailable (e.g. Docker Desktop): use the
+# default bridge network, publish the port, and pin gx10's LAN IP via extra_hosts.
+#
+#   football-agent:
+#     ...
+#     # network_mode: host       # <- remove this line
+#     ports:
+#       - "${AGENT_HOST_PORT:-8088}:8088"
+#     extra_hosts:
+#       - "gx10.haxu.home:192.168.x.y"   # <- set gx10's real LAN IP
+# ──────────────────────────────────────────────────────────────────────────

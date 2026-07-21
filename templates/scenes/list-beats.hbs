@@ -1,0 +1,8 @@
+<div>
+  <div class="scene-title">{{title}}</div>
+  {{#each data.lists}}
+    <ul class="list-beats">
+      {{#each items}}<li>{{trim text 80}}</li>{{/each}}
+    </ul>
+  {{/each}}
+</div>

@@ -1,0 +1,50 @@
+{
+  "name": "dgx-spark-video-content-harness",
+  "version": "0.1.0",
+  "description": "DGX Spark (Qwen3.6) 驱动的 agent-first 足球数据观察短视频自动生产线 (HTML/URL report -> 9:16 narrated MP4)",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "harness": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "harness": "tsx src/cli.ts",
+    "inspect": "tsx src/cli.ts inspect",
+    "pi": "tsx scripts/pi-agent-harness.ts",
+    "pi:prompt": "tsx scripts/pi-agent-harness.ts --dry-run",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test --import tsx tests/**/*.test.ts"
+  },
+  "pi": {
+    "skills": [
+      "./skills",
+      "./.pi/skills"
+    ],
+    "prompts": [
+      "./.pi/prompts"
+    ]
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.5",
+    "echarts": "^6.0.0",
+    "gsap": "^3.15.0",
+    "handlebars": "^4.7.8",
+    "microsoft-cognitiveservices-speech-sdk": "^1.41.0",
+    "openai": "^4.67.0",
+    "p-limit": "^6.1.0",
+    "puppeteer": "^25.1.0",
+    "yaml": "^2.5.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2"
+  }
+}

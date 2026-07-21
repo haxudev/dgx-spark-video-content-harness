@@ -1,0 +1,17 @@
+<div>
+  <div class="scene-title">{{title}}</div>
+  <div class="scene-subtitle">{{props.matchZh}}</div>
+  <div class="hook-meta">
+    {{#if props.kickoff}}<span>{{props.kickoff}}</span>{{/if}}
+    {{#if props.venue}}<span>{{props.venue}}</span>{{/if}}
+    {{#if props.league}}<span>{{props.league}}</span>{{/if}}
+  </div>
+  {{#if props.tags.length}}
+  <div style="margin-top:36px;display:flex;gap:12px;flex-wrap:wrap">
+    {{#each props.tags}}
+      <span style="background:#1e293b;color:#7dd3fc;font-size:22px;
+        padding:8px 18px;border-radius:999px;border:1px solid #243246;">{{this}}</span>
+    {{/each}}
+  </div>
+  {{/if}}
+</div>

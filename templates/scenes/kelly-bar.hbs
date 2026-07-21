@@ -1,0 +1,31 @@
+<div>
+  <div class="scene-title">{{title}}</div>
+  {{#each data.strategies}}
+    <div class="kelly-wrap">
+      <div class="kelly-name">{{name}}</div>
+      {{#if total}}
+        <div class="kelly-bar">
+          {{#each allocations}}
+            <div class="kelly-slice" style="flex:{{this.amount}};background:hsl({{multiply @index 38}},65%,55%)">
+              <span class="kelly-slice-label">{{trim option 6}}</span>
+              <span class="kelly-slice-pct">simulated_{{amount}}元</span>
+            </div>
+          {{/each}}
+        </div>
+        <div class="kelly-totals">合计 simulated_{{total.amount}}元 · {{total.units}}注</div>
+      {{/if}}
+    </div>
+  {{/each}}
+</div>
+<style>
+  .kelly-wrap{margin-top:24px;}
+  .kelly-name{font-size:32px;color:#fff;margin-bottom:12px;}
+  .kelly-bar{display:flex;height:64px;border-radius:12px;overflow:hidden;
+    border:1px solid var(--line);}
+  .kelly-slice{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    color:#fff;font-size:16px;text-shadow:0 1px 2px #00000088;overflow:hidden;
+    border-right:1px solid #00000044;}
+  .kelly-slice-label{font-weight:600;}
+  .kelly-slice-pct{font-size:14px;opacity:0.85;}
+  .kelly-totals{margin-top:10px;color:var(--muted);font-size:22px;}
+</style>

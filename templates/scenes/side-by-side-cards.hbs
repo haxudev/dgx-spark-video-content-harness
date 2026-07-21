@@ -1,0 +1,44 @@
+<div>
+  <div class="scene-title">{{title}}</div>
+  {{#each data.tables}}
+    {{#if (gt rows.length 0)}}
+      <div class="sbs">
+        <div class="sbs-card sbs-left">
+          <div class="sbs-name">{{lookup headers 1}}</div>
+          {{#each rows}}
+            <div class="sbs-metric">
+              <span class="sbs-key">{{trim (lookup this 0.text) 14}}</span>
+              <span class="sbs-val">{{lookup this 1.text}}</span>
+            </div>
+          {{/each}}
+        </div>
+        <div class="sbs-divider">VS</div>
+        <div class="sbs-card sbs-right">
+          <div class="sbs-name">{{lookup headers 2}}</div>
+          {{#each rows}}
+            <div class="sbs-metric">
+              <span class="sbs-key">{{trim (lookup this 0.text) 14}}</span>
+              <span class="sbs-val">{{lookup this 2.text}}</span>
+            </div>
+          {{/each}}
+        </div>
+      </div>
+    {{/if}}
+  {{/each}}
+</div>
+<style>
+  .sbs{display:flex;gap:18px;margin-top:24px;align-items:stretch;position:relative;}
+  .sbs-card{flex:1;background:var(--bg2);border:1px solid var(--line);
+    border-radius:18px;padding:24px;}
+  .sbs-card.sbs-left{border-color:#1e3a8a;}
+  .sbs-card.sbs-right{border-color:#7c2d12;}
+  .sbs-name{font-size:36px;color:#fff;margin-bottom:18px;font-weight:600;text-align:center;}
+  .sbs-metric{display:flex;justify-content:space-between;padding:10px 0;
+    border-bottom:1px solid var(--line);font-size:24px;}
+  .sbs-key{color:var(--muted);}
+  .sbs-val{color:#fff;font-variant-numeric:tabular-nums;}
+  .sbs-divider{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    background:#0b0f15;border:2px solid var(--accent);border-radius:50%;
+    width:72px;height:72px;display:flex;align-items:center;justify-content:center;
+    font-size:28px;font-weight:700;color:var(--accent);z-index:5;}
+</style>

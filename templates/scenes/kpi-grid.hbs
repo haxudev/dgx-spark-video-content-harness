@@ -1,0 +1,13 @@
+<div>
+  <div class="scene-title">{{title}}</div>
+  {{#each data.kpis}}
+    <div class="kpi-grid">
+      {{#each items}}
+        <div class="kpi">
+          <div class="v" {{#if numeric}}data-target="{{numeric}}" data-suffix="{{#if (eq this.tone 'good')}}{{else}}{{/if}}"{{/if}}>{{value}}</div>
+          <div class="l">{{label}}</div>
+        </div>
+      {{/each}}
+    </div>
+  {{/each}}
+</div>

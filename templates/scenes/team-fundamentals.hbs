@@ -1,0 +1,97 @@
+<div class="scene-eyebrow"><span class="num">①</span>球队与赛事基本面</div>
+<div class="scene-title">{{title}}</div>
+
+<div class="tf-grid">
+  {{#with data.fundamentals.homeStats}}
+  <div class="tf-card home">
+    <div class="head">
+      <div>
+        <div class="role">{{label}}</div>
+        <div class="name">{{../data.fundamentals.homeName}}</div>
+      </div>
+      {{#if kvStats}}{{else}}<div class="recent">近12场 {{recent}}</div>{{/if}}
+    </div>
+    {{#if kvStats}}
+    <div class="stats">
+      {{#each kvStats}}
+      <div class="stat"><div class="l">{{label}}</div><div class="v">{{value}}</div></div>
+      {{/each}}
+    </div>
+    {{else}}
+    <div class="stats">
+      <div class="stat"><div class="l">场均得分</div><div class="v">{{ppg}}</div></div>
+      <div class="stat"><div class="l">场均进球</div><div class="v">{{goals}}</div></div>
+      <div class="stat"><div class="l">场均失球</div><div class="v">{{conceded}}</div></div>
+      <div class="stat"><div class="l">{{splitLabel}}进球</div><div class="v">{{splitGoals}}</div></div>
+    </div>
+    <div class="split">{{splitLabel}}场均：<b>进 {{splitGoals}}</b> / <b>失 {{splitConceded}}</b></div>
+    {{/if}}
+    {{#if attackCoeff}}
+    <div class="coef">
+      <div class="c">攻击系数<b>{{attackCoeff}}</b></div>
+      <div class="c bad">防守系数<b>{{defenseCoeff}}</b></div>
+    </div>
+    {{/if}}
+  </div>
+  {{/with}}
+
+  {{#with data.fundamentals.awayStats}}
+  <div class="tf-card away">
+    <div class="head">
+      <div>
+        <div class="role">{{label}}</div>
+        <div class="name away">{{../data.fundamentals.awayName}}</div>
+      </div>
+      {{#if kvStats}}{{else}}<div class="recent away">近12场 {{recent}}</div>{{/if}}
+    </div>
+    {{#if kvStats}}
+    <div class="stats">
+      {{#each kvStats}}
+      <div class="stat"><div class="l">{{label}}</div><div class="v">{{value}}</div></div>
+      {{/each}}
+    </div>
+    {{else}}
+    <div class="stats">
+      <div class="stat"><div class="l">场均得分</div><div class="v">{{ppg}}</div></div>
+      <div class="stat"><div class="l">场均进球</div><div class="v">{{goals}}</div></div>
+      <div class="stat"><div class="l">场均失球</div><div class="v">{{conceded}}</div></div>
+      <div class="stat"><div class="l">{{splitLabel}}进球</div><div class="v">{{splitGoals}}</div></div>
+    </div>
+    <div class="split">{{splitLabel}}场均：<b>进 {{splitGoals}}</b> / <b>失 {{splitConceded}}</b></div>
+    {{/if}}
+    {{#if attackCoeff}}
+    <div class="coef">
+      <div class="c">攻击系数<b>{{attackCoeff}}</b></div>
+      <div class="c">防守系数<b>{{defenseCoeff}}</b></div>
+    </div>
+    {{/if}}
+  </div>
+  {{/with}}
+</div>
+
+{{#if data.fundamentals.homeStats.kvStats}}
+<div class="tf-summary">
+  <b>{{data.fundamentals.homeName}}</b> 与 <b>{{data.fundamentals.awayName}}</b> 在 {{data.market.hero.league}} 的实力与近况对比 ——
+  数据一目了然。
+</div>
+{{else}}
+<div class="tf-summary">
+  <b>{{data.fundamentals.homeName}}</b> 主场场均进 {{data.fundamentals.homeStats.splitGoals}} 球、
+  <b>{{data.fundamentals.awayName}}</b> 客场场均进 {{data.fundamentals.awayStats.splitGoals}} 球 ——
+  针尖对麦芒。
+</div>
+{{/if}}
+
+{{#if data.fundamentals.highlights}}
+<div class="tf-highlights">
+  {{#each data.fundamentals.highlights}}
+  <div class="tf-hl tone-{{tone}}">
+    <div class="hl-head"><span class="ico">{{icon}}</span><span class="ttl">{{title}}</span></div>
+    <ul class="hl-body">
+      {{#each bullets}}<li>{{this}}</li>{{/each}}
+    </ul>
+  </div>
+  {{/each}}
+</div>
+{{/if}}
+

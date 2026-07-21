@@ -1,0 +1,27 @@
+<div>
+  <div class="scene-title">{{title}}</div>
+  {{#each data.tables}}
+    <div class="timeline">
+      <div class="timeline-axis"></div>
+      {{#each rows}}
+        <div class="timeline-node" style="left:{{multiply @index 100}}px">
+          <div class="timeline-dot"></div>
+          <div class="timeline-label">{{trim (lookup this 0.text) 12}}</div>
+          {{#if (lookup this 1.text)}}
+            <div class="timeline-value">{{trim (lookup this 1.text) 10}}</div>
+          {{/if}}
+        </div>
+      {{/each}}
+    </div>
+  {{/each}}
+</div>
+<style>
+  .timeline{position:relative;height:240px;margin-top:60px;}
+  .timeline-axis{position:absolute;left:0;right:0;top:50%;height:4px;
+    background:linear-gradient(90deg,#7dd3fc,#a78bfa);border-radius:2px;}
+  .timeline-node{position:absolute;top:0;width:96px;text-align:center;opacity:0;}
+  .timeline-dot{width:24px;height:24px;border-radius:50%;background:#7dd3fc;
+    margin:38px auto 0;box-shadow:0 0 16px #7dd3fc88;}
+  .timeline-label{margin-top:18px;font-size:22px;color:#cbd5e1;}
+  .timeline-value{margin-top:6px;font-size:28px;color:#fff;font-weight:600;}
+</style>

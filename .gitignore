@@ -1,0 +1,11 @@
+node_modules/
+dist/
+out/
+.env
+.env.local
+*.log
+.DS_Store
+coverage/
+tts-cache/
+.cache/
+custom_voice/

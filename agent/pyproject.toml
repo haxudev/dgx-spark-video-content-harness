@@ -1,0 +1,26 @@
+[project]
+name = "podcast-football-agent"
+version = "0.1.0"
+description = "Containerized MAF hosted agent that drives the podcast-football harness pipeline (report URL -> 9:16 narrated MP4)."
+requires-python = ">=3.11"
+dependencies = [
+    # Pinned to the verified-working set (create_harness_agent signature with
+    # disable_file_memory/disable_file_access). Loosen deliberately — a floating
+    # `>=` previously drifted onto a prerelease that renamed disable_memory and
+    # crash-looped the container.
+    "agent-framework-core==1.10.0",
+    "agent-framework-openai==1.10.0",
+    "agent-framework-foundry-hosting==1.0.0a260630",
+    "mcp==1.28.1",
+    "python-dotenv>=1.0.0",
+]
+
+[project.scripts]
+football-agent = "football_agent.server:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["football_agent"]

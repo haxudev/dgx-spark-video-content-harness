@@ -1,0 +1,51 @@
+<div class="hero-card">
+  <div class="league-row">
+    <span>⚽</span>
+    <span>{{#if data.hero.league}}{{data.hero.league}}{{else}}欧洲赛事{{/if}}</span>
+    {{#if data.hero.season}}<span style="color:#94a3b8;font-size:22px">· {{data.hero.season}}</span>{{/if}}
+  </div>
+  <h1>{{#if data.hero.matchZh}}{{data.hero.matchZh}}{{else}}{{title}}{{/if}}</h1>
+
+  <div class="vs-row">
+    <div class="team-tile">
+      <div class="role">主队</div>
+      <div class="name">{{data.hero.homeName}}</div>
+    </div>
+    <div class="vs">VS</div>
+    <div class="team-tile">
+      <div class="role">客队</div>
+      <div class="name">{{data.hero.awayName}}</div>
+    </div>
+  </div>
+
+  <div class="meta-row">
+    {{#if data.hero.kickoff}}
+      <span class="chip"><span class="k">开赛</span>{{data.hero.kickoff}}</span>
+    {{/if}}
+    {{#if props.venue}}
+      <span class="chip"><span class="k">场地</span>{{props.venue}}</span>
+    {{/if}}
+    <span class="chip"><span class="k">边界</span>赛前概率观察</span>
+  </div>
+
+  {{#if data.market1x2}}
+  <div class="snapshot">
+    <div class="snap-head">赛前模型快照</div>
+    <div class="snap-odds">
+      {{#each data.market1x2.outcomes}}
+      <div class="snap-o snap-o-{{@index}}">
+        <span class="snap-role">{{role}}</span>
+        <span class="snap-pct">{{pct}}%</span>
+      </div>
+      {{/each}}
+    </div>
+    {{#if data.totalGoals.expected}}
+    <div class="snap-xg"><span class="k">预期总进球</span><b>{{data.totalGoals.expected}}</b>{{#if data.totalGoals.peakLabel}} · 峰值 {{data.totalGoals.peakLabel}}{{/if}}</div>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{#if data.hero.headline}}
+  <div class="headline">{{data.hero.headline}}</div>
+  {{/if}}
+</div>

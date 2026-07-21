@@ -1,0 +1,1096 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>{{matchId}} · 赛前概率观察 · 仅供体育内容讨论</title>
+<script src="vendor/gsap.min.js"></script>
+<script src="vendor/echarts.min.js"></script>
+<style>
+  :root{
+    /* Dark deck inspired by the source report */
+    --bg:#0e1117;
+    --bg-grad-1:#0e1117;
+    --bg-grad-2:#1a1024;
+    --surface:#161b22;
+    --surface-2:#1c2230;
+    --surface-3:#222a37;
+    --line:#2a313c;
+    --line-soft:#212833;
+    --text:#e6edf3;
+    --text-bright:#ffffff;
+    --muted:#94a3b8;
+    --accent:#6ea7ff;
+    --accent-soft:rgba(110,167,255,0.18);
+    --accent-strong:#4b86e0;
+    --positive:#7ee787;
+    --warn:#f0b14b;
+    --alert:#ff7b72;
+    --hl:#a371f7;
+    --bar-bg:#21262d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#000;color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;}
+
+  #stage{position:relative;width:1080px;height:1920px;overflow:hidden;
+    background:linear-gradient(180deg,var(--bg-grad-1) 0%,var(--bg-grad-2) 100%);}
+  .aurora{position:absolute;inset:0;pointer-events:none;opacity:0;
+    background:
+      radial-gradient(circle at 85% 8%,rgba(110,167,255,0.22) 0%,transparent 55%),
+      radial-gradient(circle at 12% 92%,rgba(163,113,247,0.18) 0%,transparent 55%);}
+
+  /* ── Agent-generated persistent background photo (optional) ───────── */
+  /* Dark, slightly-blurred cinematic backdrop reflecting the two teams.
+     Visible but never competes with foreground cards / subtitles. Falls
+     back to the gradient/aurora when no bgImage is generated. */
+  .bg-photo{position:absolute;inset:0;pointer-events:none;
+    background-size:cover;background-position:center;
+    filter:blur(7px) brightness(0.5) saturate(1.05);transform:scale(1.08);}
+  .bg-scrim{position:absolute;inset:0;pointer-events:none;
+    background:
+      radial-gradient(circle at 50% 16%,rgba(8,11,18,0.28) 0%,transparent 60%),
+      linear-gradient(180deg,rgba(8,11,18,0.58) 0%,rgba(8,11,18,0.40) 42%,rgba(8,11,18,0.82) 100%);}
+
+  /* When a generated background photo is present, make every foreground card
+     translucent so the photo shows through and the whole frame feels cohesive.
+     Redefining the surface tokens cascades transparency to all card types
+     automatically. (No backdrop blur — the bg-photo is already blurred, and a
+     per-frame backdrop-filter on the animated .scene makes the headless render
+     prohibitively slow.) */
+  #stage.has-bg{
+    --surface:rgba(22,27,34,0.64);
+    --surface-2:rgba(28,34,48,0.60);
+    --surface-3:rgba(34,42,55,0.58);
+    --line:rgba(126,148,178,0.30);
+    --line-soft:rgba(126,148,178,0.18);
+    --bar-bg:rgba(33,38,45,0.55);
+    --accent-soft:rgba(110,167,255,0.22);
+  }
+
+  /* ── Agent-generated opening cover poster (optional) ───────────────── */
+  .cover-poster{position:absolute;inset:0;z-index:120;pointer-events:none;
+    background:#05070b;overflow:hidden;box-shadow:0 0 0 999px #000;}
+  .cover-poster img{width:100%;height:100%;object-fit:cover;display:block;}
+  .cover-poster::after{content:"";position:absolute;inset:0;
+    background:
+      radial-gradient(circle at 50% 10%,rgba(255,255,255,0.08) 0%,transparent 44%),
+      linear-gradient(180deg,rgba(0,0,0,0.04) 0%,rgba(0,0,0,0.18) 100%);}
+
+  /* ── Persistent chrome (header / lower-third / footer) ─────────── */
+  .header{position:absolute;top:0;left:0;right:0;height:108px;padding:28px 36px;
+    display:flex;justify-content:space-between;align-items:center;z-index:20;
+    color:#cbd5e1;font-size:28px;letter-spacing:1px;}
+  .header .league{display:flex;align-items:center;gap:14px;
+    background:rgba(22,27,34,0.7);backdrop-filter:blur(8px);
+    border:1px solid var(--line);padding:10px 22px;border-radius:999px;font-size:26px;}
+  .header .league .dot{width:10px;height:10px;border-radius:50%;
+    background:var(--positive);box-shadow:0 0 10px var(--positive);}
+  .header .pill{background:rgba(63,16,38,0.65);color:#fda4af;
+    border:1px solid #831843;padding:10px 22px;border-radius:999px;font-size:26px;
+    backdrop-filter:blur(8px);}
+
+  .scene{position:absolute;top:128px;left:0;right:0;bottom:352px;
+    padding:24px 36px;opacity:0;display:flex;flex-direction:column;gap:20px;}
+  .scene-eyebrow{display:inline-flex;align-items:center;gap:12px;
+    font-size:28px;color:var(--accent);font-weight:700;letter-spacing:0.04em;
+    text-transform:uppercase;}
+  .scene-eyebrow .num{display:inline-flex;width:40px;height:40px;border-radius:50%;
+    background:var(--accent-soft);color:var(--accent);font-size:22px;font-weight:700;
+    align-items:center;justify-content:center;}
+  .scene-title{font-size:64px;font-weight:800;color:#fff;line-height:1.12;
+    text-shadow:0 4px 24px #00000088;letter-spacing:1px;
+    white-space:pre-line;  /* 支持标题内换行 */}
+  .scene-subtitle{font-size:34px;color:var(--muted);}
+
+  /* ── Subtitles removed ── a bottom avatar presenter band (see the
+     avatar-layout style injected near the end of this stylesheet) replaces the
+     old lower-third caption strip; the deck is now identical for podcast and
+     monologue (only the source image + voice + script differ). ──────────── */
+  .footer{position:absolute;bottom:0;left:0;right:0;padding:14px 36px;text-align:center;
+    color:var(--muted);font-size:22px;letter-spacing:1px;z-index:20;}
+
+  /* ── Hero ───────────────────────────────────────────────────────── */
+  .hero-card{flex:1;display:flex;flex-direction:column;justify-content:center;gap:28px;
+    background:linear-gradient(140deg,var(--surface) 0%,var(--surface-2) 100%);
+    border:1px solid var(--line);border-radius:28px;padding:48px 40px;
+    box-shadow:0 16px 48px rgba(0,0,0,0.45);}
+  .hero-card .league-row{display:flex;align-items:center;gap:14px;color:var(--accent);font-size:32px;font-weight:700;}
+  .hero-card h1{font-size:72px;color:#fff;line-height:1.12;font-weight:800;letter-spacing:1px;}
+  .hero-card .vs-row{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center;
+    margin-top:24px;}
+  .hero-card .team-tile{background:var(--surface-2);border:1px solid var(--line-soft);
+    border-radius:20px;padding:32px 20px;text-align:center;}
+  .hero-card .team-tile .role{font-size:24px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;font-weight:600;}
+  .hero-card .team-tile .name{font-size:42px;color:#fff;font-weight:800;margin-top:10px;}
+  .hero-card .vs-row .vs{font-size:52px;color:var(--accent);font-weight:800;letter-spacing:0.2em;}
+  .hero-card .meta-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:18px;}
+  .hero-card .meta-row .chip{display:inline-flex;align-items:center;gap:10px;
+    background:var(--surface-3);border:1px solid var(--line-soft);
+    border-radius:999px;padding:12px 22px;font-size:26px;color:#dbe3ee;font-weight:600;}
+  .hero-card .meta-row .chip .k{color:var(--muted);font-size:22px;}
+  .hero-card .headline{margin-top:20px;padding:22px 26px;
+    border-left:6px solid var(--accent);background:var(--accent-soft);
+    border-radius:12px;font-size:32px;color:#fff;line-height:1.4;font-weight:600;}
+  /* Cover model-snapshot strip — fills the otherwise empty upper card area. */
+  .hero-card .snapshot{margin-top:6px;padding:24px 26px;background:var(--surface-2);
+    border:1px solid var(--line-soft);border-radius:16px;display:flex;flex-direction:column;gap:18px;}
+  .hero-card .snapshot .snap-head{font-size:24px;color:var(--muted);font-weight:700;
+    letter-spacing:0.08em;text-transform:uppercase;}
+  .hero-card .snapshot .snap-odds{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .hero-card .snapshot .snap-o{display:flex;flex-direction:column;align-items:center;gap:8px;
+    padding:18px 10px;border-radius:14px;background:var(--surface);border:1px solid var(--line-soft);}
+  .hero-card .snapshot .snap-o-0{border-color:#4ade80;}
+  .hero-card .snapshot .snap-o-1{border-color:#f97316;}
+  .hero-card .snapshot .snap-o-2{border-color:#f87171;}
+  .hero-card .snapshot .snap-role{font-size:28px;color:#dbe3ee;font-weight:600;}
+  .hero-card .snapshot .snap-pct{font-size:46px;color:#fff;font-weight:800;line-height:1;}
+  .hero-card .snapshot .snap-xg{font-size:28px;color:#dbe3ee;}
+  .hero-card .snapshot .snap-xg .k{color:var(--muted);margin-right:12px;}
+  .hero-card .snapshot .snap-xg b{color:#fff;font-size:34px;}
+
+  /* ── Team fundamentals (Module 1) ───────────────────────────────── */
+  /* Team cards are compact (no flex:1) — the highlight row below claims
+     the remaining vertical space so narrative cards stay roomy. */
+  .tf-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;flex:none;}
+  .tf-card{background:var(--surface);border:1px solid var(--line);border-radius:20px;
+    padding:18px 22px;display:flex;flex-direction:column;gap:12px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.35);}
+  .tf-card.away{border-color:#5b3a73;}
+  .tf-card .head{display:flex;justify-content:space-between;align-items:center;}
+  .tf-card .role{font-size:20px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
+  .tf-card .name{font-size:34px;color:#fff;font-weight:800;}
+  .tf-card .name.away{color:#e3c5ff;}
+  .tf-card .recent{font-size:24px;color:var(--accent);font-weight:700;}
+  .tf-card .recent.away{color:#c39cf7;}
+  .tf-card .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .tf-card .stat{background:var(--surface-2);border:1px solid var(--line-soft);
+    border-radius:12px;padding:12px 10px;text-align:center;}
+  .tf-card .stat .l{font-size:20px;color:var(--muted);}
+  .tf-card .stat .v{font-size:34px;color:#fff;font-weight:800;line-height:1.05;margin-top:4px;
+    font-variant-numeric:tabular-nums;}
+  .tf-card .split{background:var(--surface-3);border:1px solid var(--line-soft);
+    border-radius:12px;padding:14px 18px;font-size:22px;color:#dbe3ee;line-height:1.5;}
+  .tf-card .split b{color:#fff;}
+  .tf-card .coef{display:flex;gap:12px;}
+  .tf-card .coef .c{flex:1;font-size:20px;color:var(--muted);text-align:center;
+    background:var(--surface-2);border:1px solid var(--line-soft);border-radius:12px;padding:10px 8px;}
+  .tf-card .coef .c b{color:var(--positive);font-size:24px;display:block;margin-top:4px;}
+  .tf-card .coef .c.bad b{color:var(--alert);}
+  .tf-summary{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+    padding:18px 24px;font-size:24px;color:#dbe3ee;line-height:1.45;flex:none;}
+  .tf-summary b{color:#fff;}
+
+  /* Fundamentals — narrative highlights row (claims remaining height) */
+  .tf-highlights{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;
+    flex:1;min-height:0;}
+  .tf-hl{background:var(--surface);border:1px solid var(--line-soft);border-radius:18px;
+    padding:22px 24px;display:flex;flex-direction:column;gap:14px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.32);min-height:0;}
+  .tf-hl.tone-warn{border-left:5px solid var(--warn);}
+  .tf-hl.tone-good{border-left:5px solid var(--positive);}
+  .tf-hl.tone-info{border-left:5px solid var(--accent);}
+  .tf-hl.tone-bad{border-left:5px solid var(--alert);}
+  .tf-hl .hl-head{display:flex;align-items:center;gap:14px;}
+  .tf-hl .hl-head .ico{font-size:38px;line-height:1;}
+  .tf-hl .hl-head .ttl{font-size:30px;color:#fff;font-weight:800;letter-spacing:0.02em;}
+  .tf-hl .hl-body{list-style:none;display:flex;flex-direction:column;gap:10px;margin:0;padding:0;
+    font-family:"PingFang SC","Microsoft YaHei",-apple-system,sans-serif;}
+  .tf-hl .hl-body li{font-size:26px;color:#e7ecf3;line-height:1.45;padding-left:22px;
+    position:relative;letter-spacing:0.01em;}
+  .tf-hl .hl-body li::before{content:"·";position:absolute;left:6px;top:-2px;
+    color:var(--accent);font-weight:900;font-size:32px;}
+
+  /* ── Market grid (Module 2) ──────────────────────────────────────── */
+  .mg-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
+    gap:16px;flex:1;min-height:0;}
+  .mg-card{background:var(--surface);border:1px solid var(--line);border-radius:22px;
+    padding:22px 22px;display:flex;flex-direction:column;gap:10px;min-height:0;overflow:hidden;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4);}
+  .mg-card h3{font-size:34px;color:#fff;font-weight:800;display:flex;align-items:center;gap:12px;}
+  .mg-card h3 .badge{font-size:22px;background:var(--accent-soft);color:var(--accent);
+    border-radius:10px;padding:5px 14px;letter-spacing:0.04em;}
+  .mg-card .ec-host{flex:1;min-height:190px;width:100%;position:relative;}
+  .mg-card .summary{font-size:26px;color:var(--text);line-height:1.34;}
+  .mg-card .summary b{color:var(--text-bright);font-weight:800;}
+  /* ── Correct Score Top 5 (elegant horizontal bars) ──────────────── */
+  .cs-top5{display:flex;flex-direction:column;gap:9px;flex:1;min-height:0;justify-content:space-between;}
+  .cs-row{display:grid;grid-template-columns:30px 84px 64px 1fr;gap:12px;align-items:center;
+    background:var(--surface-2);border:1px solid var(--line-soft);
+    border-radius:13px;padding:11px 18px;font-size:27px;font-variant-numeric:tabular-nums;}
+  .cs-row.lead{background:var(--accent-soft);border-color:var(--accent);}
+  .cs-row .rank{font-size:22px;color:var(--muted);font-weight:600;text-align:center;}
+  .cs-row.lead .rank{color:var(--accent);}
+  .cs-row .score{font-weight:800;color:#fff;font-size:30px;}
+  .cs-row.lead .score{color:var(--accent);}
+  .cs-row .pct{font-weight:800;color:var(--accent);font-size:26px;}
+  .cs-row.lead .pct{color:var(--warn);}
+  .cs-row .bar-wrap{height:10px;background:var(--bar-bg);border-radius:5px;overflow:hidden;}
+  .cs-row .bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--hl));
+    width:100%;transform-origin:left;transform:scaleX(0);border-radius:5px;}
+  .cs-row.lead .bar-fill{background:linear-gradient(90deg,var(--warn),#f97316);}
+
+  .mg-card .topscores{display:flex;flex-direction:column;gap:8px;}
+  .mg-card .topscores .row{display:flex;justify-content:space-between;
+    background:var(--surface-2);border:1px solid var(--line-soft);
+    border-radius:10px;padding:10px 16px;font-size:24px;
+    font-variant-numeric:tabular-nums;}
+  .mg-card .topscores .row.lead{background:var(--accent-soft);border-color:var(--accent);
+    color:var(--accent);}
+  .mg-card .topscores .row .score{font-weight:800;color:#fff;}
+  .mg-card .topscores .row.lead .score{color:var(--accent);}
+
+  /* ── Upset dashboard (Module 3) ──────────────────────────────────── */
+  .upset-wrap{display:flex;flex-direction:column;gap:20px;flex:1;}
+  .upset-hero-card{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center;
+    background:linear-gradient(135deg,var(--surface) 0%,var(--surface-2) 100%);
+    border:1px solid var(--line);border-radius:22px;padding:30px;
+    box-shadow:0 12px 36px rgba(0,0,0,0.45);}
+  .upset-hero-card .gauge-host{width:320px;height:320px;flex:none;}
+  .upset-hero-card .narr{display:flex;flex-direction:column;gap:14px;font-size:28px;color:#dbe3ee;line-height:1.42;}
+  .upset-hero-card .narr .band{display:inline-flex;align-items:center;gap:8px;
+    background:var(--warn);color:#1a1a1a;border-radius:10px;padding:8px 16px;
+    font-weight:800;font-size:24px;align-self:flex-start;}
+  .upset-hero-card .narr .fav{font-size:30px;color:#fff;}
+  .upset-hero-card .narr b{color:#fff;}
+  .upset-scores{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .upset-score{background:var(--surface);border:1px solid var(--line-soft);
+    border-radius:16px;padding:18px 14px;display:flex;flex-direction:column;gap:10px;}
+  .upset-score.top{border-color:var(--warn);background:rgba(240,177,75,0.10);}
+  .upset-score .row{display:flex;justify-content:space-between;align-items:baseline;}
+  .upset-score .score{font-size:40px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;}
+  .upset-score .pct{font-size:26px;color:var(--accent);font-variant-numeric:tabular-nums;font-weight:700;}
+  .upset-score .interp{font-size:22px;color:var(--muted);}
+  .upset-score .bar{height:8px;background:var(--bar-bg);border-radius:4px;overflow:hidden;}
+  .upset-score .bar .fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--hl));
+    width:100%;transform-origin:left;transform:scaleX(0);}
+  /* Act-4 爆冷 2×2 four-card grid (below the gauge hero). */
+  .upset-cards{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);
+    gap:20px;flex:1;min-height:0;}
+  .upset-card{position:relative;overflow:hidden;background:var(--surface);
+    border:1px solid var(--line);border-radius:20px;padding:26px 28px;
+    display:flex;flex-direction:column;gap:12px;justify-content:center;}
+  .upset-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;
+    background:var(--accent);opacity:0.85;}
+  .upset-card.tone-hot::before{background:linear-gradient(180deg,#ff7b72,#f0b14b);}
+  .upset-card.tone-fav::before{background:linear-gradient(180deg,#6ea7ff,#7ce0c8);}
+  .upset-card.tone-metric::before{background:linear-gradient(180deg,#f0b14b,#ff7b72);}
+  .upset-card.tone-score::before{background:linear-gradient(180deg,#c08bff,#6ea7ff);}
+  .upset-card .uk-label{font-size:28px;color:#dbe3ee;font-weight:700;letter-spacing:0.5px;}
+  .upset-card .uk-value{font-size:64px;line-height:1;color:#fff;font-weight:800;
+    font-variant-numeric:tabular-nums;}
+  .upset-card.tone-hot .uk-value{color:var(--warn);}
+  .upset-card .uk-detail{font-size:23px;color:var(--muted);line-height:1.4;}
+  .upset-card .uk-bar{height:10px;background:var(--bar-bg);border-radius:5px;overflow:hidden;margin-top:2px;}
+  .upset-card .uk-bar .uk-fill{height:100%;border-radius:5px;
+    background:linear-gradient(90deg,var(--accent),var(--hl));
+    width:100%;transform-origin:left;transform:scaleX(0);}
+  .upset-complex{background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    padding:22px 26px;font-size:26px;color:#dbe3ee;line-height:1.45;}
+  .upset-complex b{color:#fff;}
+
+  /* Upset — factor cards (claim remaining height with larger fonts) */
+  .upset-factors{display:flex;flex-direction:column;gap:12px;flex:1;min-height:0;}
+  .upset-factors .uf-head{font-size:26px;color:var(--muted);font-weight:700;
+    letter-spacing:0.04em;padding-left:4px;}
+  .upset-factors .uf-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;
+    flex:1;min-height:0;}
+  .upset-factors .uf-card{background:var(--surface);border:1px solid var(--line-soft);
+    border-radius:16px;padding:22px 24px;display:flex;flex-direction:column;gap:10px;
+    box-shadow:0 6px 16px rgba(0,0,0,0.32);min-height:0;}
+  .upset-factors .uf-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  .upset-factors .uf-label{font-size:30px;color:#fff;font-weight:800;line-height:1.18;
+    flex:1;min-width:0;letter-spacing:0.01em;}
+  .upset-factors .uf-weight{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;
+    background:rgba(240,177,75,0.20);color:var(--warn);
+    border:1px solid rgba(240,177,75,0.45);border-radius:999px;padding:6px 16px;flex:none;}
+  .upset-factors .uf-interp{font-size:24px;color:#cdd4de;line-height:1.42;}
+
+  /* Upset — LLM-summarised interpretation cards (replaces factor table when
+     present). 2- or 4-card symmetric grid, mobile vertical (9:16) friendly,
+     with bullet body styled large enough to read at arm's length.       */
+  .upset-interpret{display:flex;flex-direction:column;gap:14px;flex:1;min-height:0;}
+  .upset-interpret .ui-head{font-size:28px;color:var(--muted);font-weight:700;
+    letter-spacing:0.04em;padding-left:4px;}
+  .upset-interpret .ui-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;
+    flex:1;min-height:0;grid-auto-rows:minmax(0,1fr);align-content:stretch;}
+  .upset-interpret .ui-card{background:var(--surface);border:1px solid var(--line-soft);
+    border-left:6px solid var(--accent);border-radius:20px;padding:24px 26px;
+    display:flex;flex-direction:column;gap:14px;
+    box-shadow:0 8px 22px rgba(0,0,0,0.4);min-height:0;
+    font-family:"PingFang SC","Microsoft YaHei",-apple-system,sans-serif;
+    opacity:0;transform:translateY(20px);}
+  .upset-interpret .ui-card:nth-child(2){border-left-color:var(--warn);}
+  .upset-interpret .ui-card:nth-child(3){border-left-color:var(--positive);}
+  .upset-interpret .ui-card:nth-child(4){border-left-color:var(--hl);}
+  .upset-interpret .ui-title{font-size:36px;color:#fff;font-weight:800;
+    line-height:1.18;letter-spacing:0.02em;}
+  .upset-interpret .ui-body{list-style:none;display:flex;flex-direction:column;
+    gap:12px;margin:0;padding:0;}
+  .upset-interpret .ui-body li{font-size:28px;color:#e7ecf3;line-height:1.45;
+    padding-left:26px;position:relative;letter-spacing:0.01em;}
+  .upset-interpret .ui-body li::before{content:"▸";position:absolute;left:2px;
+    top:-1px;color:currentColor;opacity:.7;font-weight:900;font-size:24px;}
+  /* When only 2 cards, give each more room — single row of 2.            */
+  .upset-interpret .ui-grid:has(> .ui-card:nth-child(2):last-child){
+    grid-template-rows:1fr;}
+  .upset-interpret .ui-grid:has(> .ui-card:nth-child(2):last-child) .ui-title{font-size:40px;}
+  .upset-interpret .ui-grid:has(> .ui-card:nth-child(2):last-child) .ui-body li{font-size:30px;}
+
+  /* ── Strategy board (Module 4) ───────────────────────────────────── */
+  .strat-wrap{display:flex;flex-direction:column;gap:16px;flex:1;}
+  .strat-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .strat-card{background:var(--surface);border:1px solid var(--line-soft);
+    border-radius:18px;padding:22px 20px;display:flex;flex-direction:column;gap:12px;
+    opacity:0;transform:translateY(40px);}
+  .strat-card.safe{border-top:5px solid var(--positive);}
+  .strat-card.aggr{border-top:5px solid var(--alert);}
+  .strat-card.hunt{border-top:5px solid var(--accent);}
+  .strat-card.upset{border-top:5px solid var(--hl);}
+  .strat-card .head{display:flex;align-items:center;gap:14px;}
+  .strat-card .head .icon{font-size:42px;}
+  .strat-card .head .name{font-size:34px;color:#fff;font-weight:800;}
+  .strat-card .head .risk{margin-left:auto;font-size:20px;color:var(--muted);
+    background:var(--surface-3);border-radius:999px;padding:6px 14px;}
+  .strat-card .tagline{font-size:22px;color:var(--muted);line-height:1.42;}
+  .strat-card .picks{display:flex;flex-direction:column;gap:8px;}
+  .strat-card .picks .pick{display:flex;justify-content:space-between;align-items:center;
+    background:var(--surface-2);border:1px solid var(--line-soft);
+    border-radius:10px;padding:10px 14px;font-variant-numeric:tabular-nums;
+    color:#dbe3ee;gap:10px;}
+  .strat-card .picks .pick .pick-l{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;}
+  .strat-card .picks .pick .pick-market{font-size:18px;color:var(--muted);letter-spacing:0.04em;}
+  .strat-card .picks .pick .pick-option{font-size:24px;color:#fff;font-weight:700;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .strat-card .picks .pick .pick-r{display:flex;align-items:baseline;gap:10px;flex:none;}
+  .strat-card .picks .pick .pick-pp{font-size:20px;color:var(--positive);font-weight:700;}
+  .strat-card .picks .pick .pick-odds{font-size:20px;color:var(--accent);font-weight:700;}
+  .strat-card .picks .pick .pick-stake{font-size:24px;color:#fff;font-weight:800;
+    background:var(--accent-soft);border-radius:8px;padding:2px 10px;}
+  .strat-card .total{margin-top:auto;font-size:22px;color:var(--muted);}
+  .strat-card .total b{color:#fff;}
+
+  /* ── Watch boundary dashboard — four even visual cards, chart-first ── */
+  .boundary-dashboard{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
+    gap:18px;flex:1;min-height:0;}
+  .boundary-card{position:relative;overflow:hidden;background:linear-gradient(145deg,#111827 0%,#171d2b 100%);
+    border:1px solid var(--line-soft);border-radius:24px;padding:22px;
+    box-shadow:0 12px 30px rgba(0,0,0,0.42);opacity:0;transform:translateY(22px);}
+  .boundary-card::before{content:"";position:absolute;inset:-40%;opacity:.28;
+    background:radial-gradient(circle at 25% 20%,var(--glow,#6ea7ff) 0%,transparent 34%);
+    filter:blur(12px);}
+  .boundary-card.compass{--glow:#6ea7ff;}
+  .boundary-card.balance{--glow:#a371f7;}
+  .boundary-card.tempo{--glow:#7ee787;}
+  .boundary-card.brake{--glow:#f0b14b;}
+  .boundary-icon{position:absolute;top:22px;left:24px;z-index:2;width:58px;height:58px;border-radius:18px;
+    display:flex;align-items:center;justify-content:center;font-size:34px;
+    background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.12);}
+  .boundary-chart{position:absolute;inset:20px;width:calc(100% - 40px);height:calc(100% - 40px);z-index:1;}
+
+  .payoff-card{background:linear-gradient(135deg,var(--surface) 0%,#1e2230 100%);
+    border:1px solid var(--line);border-radius:20px;padding:22px;
+    display:flex;flex-direction:column;gap:14px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.45);}
+  .payoff-card .head{display:flex;justify-content:space-between;align-items:baseline;}
+  .payoff-card .scenario{font-size:28px;color:#dbe3ee;}
+  .payoff-card .scenario b{font-size:38px;color:#fff;margin-left:8px;font-variant-numeric:tabular-nums;}
+  .payoff-card .prob{font-size:24px;color:var(--accent);}
+  .payoff-card .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+  .payoff-card .mini{background:var(--surface-2);border:1px solid var(--line-soft);
+    border-radius:12px;padding:12px;text-align:center;}
+  .payoff-card .mini .nm{font-size:22px;color:#fff;font-weight:600;}
+  .payoff-card .mini .pf{font-size:28px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums;}
+  .payoff-card .mini .pf.gain{color:var(--positive);}
+  .payoff-card .mini .pf.loss{color:var(--alert);}
+  .payoff-card .mini .hits{font-size:18px;color:var(--muted);margin-top:4px;}
+
+  /* ── Compliance closing ──────────────────────────────────────────── */
+  .compliance-card{flex:1;display:flex;flex-direction:column;justify-content:center;gap:24px;
+    background:linear-gradient(135deg,#1a3f2a 0%,#1f3325 100%);
+    border:1px solid #3a5b4a;border-radius:26px;padding:48px;color:#bbf7d0;}
+  .compliance-card h2{font-size:54px;color:#fff;letter-spacing:1px;font-weight:800;}
+  .compliance-card ul{list-style:none;display:flex;flex-direction:column;gap:18px;}
+  .compliance-card li{display:flex;gap:18px;align-items:flex-start;
+    font-size:36px;line-height:1.4;color:#dcfce7;font-weight:600;}
+  .compliance-card li::before{content:"✓";color:#86efac;font-size:36px;
+    flex:none;background:rgba(134,239,172,0.15);border-radius:50%;
+    width:50px;height:50px;display:inline-flex;align-items:center;justify-content:center;}
+  .compliance-card .comp-eyebrow{display:inline-flex;align-items:center;gap:12px;
+    align-self:flex-start;font-size:26px;font-weight:700;color:#86efac;
+    letter-spacing:0.08em;padding:12px 22px;border-radius:999px;
+    background:rgba(134,239,172,0.12);border:1px solid rgba(134,239,172,0.3);}
+  .compliance-card .comp-eyebrow span{font-size:24px;}
+  .compliance-card .comp-foot{margin-top:10px;padding-top:24px;
+    border-top:1px solid rgba(134,239,172,0.25);font-size:34px;color:#dcfce7;
+    font-weight:700;text-align:center;}
+
+  /* ── Legacy fallback styles (kept for paragraph-flow etc.) ───── */
+  .kpi{background:var(--surface-2);border:1px solid var(--line);border-radius:18px;
+    padding:32px 24px;text-align:center;flex:1;min-width:0;}
+  .kpi .v{font-size:84px;font-weight:700;color:var(--accent);line-height:1;
+    font-variant-numeric:tabular-nums;}
+  .kpi .l{font-size:24px;color:var(--muted);margin-top:12px;}
+  .kpi-grid{display:flex;gap:18px;margin-top:24px;}
+  .bar-row{display:flex;align-items:center;gap:18px;margin:14px 0;}
+  .bar-row .label{width:200px;font-size:28px;color:#fff;flex-shrink:0;}
+  .bar-row .bar{flex:1;height:42px;background:var(--surface-2);border-radius:10px;overflow:hidden;
+    position:relative;border:1px solid var(--line);}
+  .bar-row .fill{position:absolute;left:0;top:0;height:100%;
+    background:linear-gradient(90deg,#3b82f6,#8b5cf6);transform-origin:left;transform:scaleX(0);}
+  .bar-row .pct{position:absolute;right:14px;top:50%;transform:translateY(-50%);
+    color:#fff;font-size:24px;font-variant-numeric:tabular-nums;}
+  .paragraph-flow p{font-size:30px;line-height:1.55;color:var(--text);margin:18px 0;
+    opacity:0;transform:translateY(20px);}
+  .quote{font-size:42px;line-height:1.4;color:#fff;text-align:center;
+    padding:32px 24px;background:var(--surface-2);border-left:6px solid var(--accent);
+    border-radius:12px;margin-top:24px;font-weight:600;}
+  .callout-box{background:linear-gradient(135deg,#3f2937,#2a1f33);
+    border:1px solid #5b3a4a;border-radius:24px;padding:48px;margin-top:24px;
+    font-size:36px;line-height:1.5;color:#fecaca;}
+  .callout-box.compliance{background:linear-gradient(135deg,#1a3f2a,#1f3325);
+    border-color:#3a5b4a;color:#bbf7d0;}
+  .callout-box.warn{background:linear-gradient(135deg,#3f3027,#332a1f);
+    border-color:#5b4a3a;color:#fde68a;}
+  .list-beats li{font-size:32px;color:#fff;margin:18px 0;opacity:0;
+    transform:translateX(-20px);list-style:none;padding-left:32px;position:relative;line-height:1.4;}
+  .list-beats li::before{content:"▸";position:absolute;left:0;color:var(--accent);}
+
+  /* Risk / 赛前反思 — uniform-background card grid with bulleted body. Supports
+     2 / 4 / 6 cards in a symmetric 2-column layout for mobile vertical (9:16)
+     viewports. Card body bullets and titles are sized generously so each
+     reflection point reads clearly without zooming.                         */
+  .risk-wrap{display:flex;flex-direction:column;gap:18px;flex:1;}
+  .risk-wrap .risk-eyebrow{font-size:30px;color:#fda4af;font-weight:700;letter-spacing:0.04em;}
+  .risk-cards{display:grid;grid-template-columns:1fr 1fr;gap:22px;flex:1;min-height:0;
+    grid-auto-rows:minmax(0,1fr);align-content:stretch;}
+  .risk-card{background:var(--surface);border:1px solid var(--line-soft);
+    border-left:6px solid var(--accent,var(--accent));
+    border-radius:22px;padding:26px 30px;
+    display:flex;flex-direction:column;gap:18px;opacity:0;transform:translateY(20px);
+    box-shadow:0 10px 26px rgba(0,0,0,0.42);min-height:0;
+    font-family:"PingFang SC","Microsoft YaHei",-apple-system,sans-serif;}
+  .risk-card .head{display:flex;align-items:center;gap:18px;}
+  .risk-card .head .ico{font-size:52px;line-height:1;}
+  .risk-card .head .ttl{font-size:38px;color:#fff;font-weight:800;line-height:1.15;letter-spacing:0.02em;}
+  .risk-card .body{list-style:none;display:flex;flex-direction:column;gap:14px;margin:0;padding:0;}
+  .risk-card .body li{font-size:30px;color:#e7ecf3;line-height:1.45;padding-left:30px;
+    position:relative;letter-spacing:0.01em;}
+  .risk-card .body li::before{content:"▸";position:absolute;left:2px;top:-1px;
+    color:var(--accent,#6ea7ff);font-weight:900;font-size:28px;}
+  /* When 4 or fewer cards, shrink the type slightly less aggressively — the
+     2-row layout has more vertical room per card than the 3-row layout.    */
+  .risk-cards:has(> .risk-card:nth-child(-n+4):last-child) .risk-card{padding:28px 32px;gap:20px;}
+  .risk-cards:has(> .risk-card:nth-child(-n+4):last-child) .risk-card .head .ttl{font-size:42px;}
+  .risk-cards:has(> .risk-card:nth-child(-n+4):last-child) .risk-card .body li{font-size:32px;}
+  .risk-cards:has(> .risk-card:nth-child(-n+4):last-child) .risk-card .head .ico{font-size:58px;}
+  .hook-meta{font-size:28px;color:var(--muted);margin-top:24px;line-height:1.5;}
+  .hook-meta span{margin-right:24px;display:inline-block;}
+  .compare{display:flex;gap:16px;align-items:stretch;margin-top:24px;}
+  .compare > div{flex:1;background:var(--surface-2);border:1px solid var(--line);
+    border-radius:18px;padding:24px;text-align:center;}
+  .compare .h{font-size:36px;color:var(--accent);margin-bottom:18px;}
+  .compare .row{display:flex;justify-content:space-between;padding:10px 0;
+    border-bottom:1px solid var(--line);font-size:26px;color:#fff;}
+  .table-row-focus table{width:100%;border-collapse:collapse;font-size:26px;color:#fff;}
+  .table-row-focus th,.table-row-focus td{padding:14px 12px;border-bottom:1px solid var(--line);text-align:left;}
+  .table-row-focus th{color:var(--muted);font-size:22px;background:var(--surface-2);}
+  .table-row-focus tr.highlight td{background:rgba(110,167,255,0.12);}
+
+  /* ── v2 generic chart host ───────────────────────────────────────── */
+  .ec-host{flex:1;min-height:240px;width:100%;position:relative;}
+
+  /* ── v2 Act-1 cover (anime AI poster, full-bleed) ────────────────── */
+  /* Give the cover scene more room and show the whole poster (no crop). */
+  .scene:has(.cover-anime){top:112px;bottom:296px;padding:10px 18px;}
+  .cover-anime{position:relative;flex:1;display:flex;min-height:0;border-radius:22px;overflow:hidden;
+    background:#05070b;box-shadow:0 18px 52px rgba(0,0,0,0.5);}
+  /* Full-bleed AI cover image backdrop (gpt-image-2) + readability scrim. */
+  .cover-anime-bg{position:absolute;inset:0;z-index:0;}
+  .cover-anime-bg img{width:100%;height:100%;object-fit:cover;display:block;}
+  .cover-anime-scrim{position:absolute;inset:0;z-index:1;
+    background:linear-gradient(180deg,rgba(5,7,11,0.30) 0%,rgba(5,7,11,0.52) 46%,rgba(5,7,11,0.86) 100%);}
+  /* Data panel — always rendered; centred when no image, anchored to the
+     bottom (over the darkened lower third) when an AI cover backdrop exists. */
+  .cover-anime-panel{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;gap:24px;
+    justify-content:center;padding:48px 44px;background:linear-gradient(140deg,#141a2c 0%,#1c1430 100%);}
+  .cover-anime.has-img .cover-anime-panel{justify-content:flex-end;background:none;padding:44px 40px 40px;}
+  .cover-anime.has-img .cover-anime-panel .cf-match{text-shadow:0 3px 18px rgba(0,0,0,0.7);}
+  /* Header row: league/cup name (left) + match kickoff date/time (right). */
+  .cover-anime-panel .cf-meta{display:flex;align-items:center;flex-wrap:wrap;gap:16px;}
+  .cover-anime-panel .cf-league{font-size:30px;font-weight:800;color:var(--accent);
+    background:var(--accent-soft);border-radius:999px;padding:10px 26px;letter-spacing:0.04em;}
+  .cover-anime-panel .cf-kick{font-size:28px;font-weight:600;color:#dbe3ee;
+    font-variant-numeric:tabular-nums;letter-spacing:0.02em;}
+  .cover-anime.has-img .cover-anime-panel .cf-kick{text-shadow:0 2px 12px rgba(0,0,0,0.7);}
+  .cover-anime-panel .cf-match{font-size:72px;font-weight:800;color:#fff;line-height:1.12;}
+  .cover-anime-panel .cf-1x2{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .cover-anime-panel .cf-o{display:flex;flex-direction:column;align-items:center;gap:8px;
+    padding:22px 12px;border-radius:18px;background:var(--surface);border:1px solid var(--line-soft);}
+  .cover-anime.has-img .cover-anime-panel .cf-o{background:rgba(12,16,26,0.74);}
+  .cover-anime-panel .cf-o.lead{border-color:var(--warn);background:rgba(240,177,75,0.10);}
+  .cover-anime.has-img .cover-anime-panel .cf-o.lead{background:rgba(240,177,75,0.18);}
+  .cover-anime-panel .cf-role{font-size:26px;color:var(--muted);font-weight:600;}
+  .cover-anime-panel .cf-team{font-size:30px;color:#fff;font-weight:700;}
+  .cover-anime-panel .cf-pct{font-size:52px;color:#fff;font-weight:800;line-height:1;}
+  .cover-anime-panel .cf-o.lead .cf-pct{color:var(--warn);}
+  .cover-anime-panel .cf-block{display:flex;flex-direction:column;gap:14px;}
+  .cover-anime-panel .cf-head{font-size:26px;color:var(--muted);font-weight:700;margin-bottom:10px;}
+  /* 最可能比分: 2×2 grid of Top-4 score chips. */
+  .cover-anime-panel .cf-scores{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  .cover-anime-panel .cf-chip{display:flex;align-items:center;justify-content:center;gap:8px;
+    font-size:32px;color:#dbe3ee;background:var(--surface-2);
+    border:1px solid var(--line-soft);border-radius:14px;padding:16px 20px;font-variant-numeric:tabular-nums;}
+  .cover-anime.has-img .cover-anime-panel .cf-chip{background:rgba(12,16,26,0.74);}
+  .cover-anime-panel .cf-chip b{color:#fff;font-size:38px;}
+
+  /* ── v2 Act-2 fundamentals + market signal ───────────────────────── */
+  .fs-wrap{display:flex;flex-direction:column;gap:20px;flex:1;min-height:0;}
+  /* Top: two team cards (实力评分 / 近期场均) in a single row with a VS divider. */
+  .fs-teams{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:stretch;flex:none;}
+  .fs-team{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:22px 24px;
+    display:flex;flex-direction:column;gap:16px;box-shadow:0 8px 24px rgba(0,0,0,0.4);}
+  .fs-team.home{border-top:5px solid var(--accent);}
+  .fs-team.away{border-top:5px solid var(--hl);}
+  .fs-team-top{display:flex;align-items:baseline;gap:12px;}
+  .fs-team-top .fs-role{font-size:22px;color:var(--muted);font-weight:600;letter-spacing:0.08em;}
+  .fs-team-top .fs-role.away{color:#c39cf7;}
+  .fs-team-top .fs-name{font-size:40px;color:#fff;font-weight:800;line-height:1.1;}
+  .fs-team-top .fs-name.away{color:#e3c5ff;}
+  .fs-team-stats{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .fs-stat{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:14px;
+    padding:16px 12px;text-align:center;}
+  .fs-stat .fs-stat-v{font-size:46px;color:#fff;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;}
+  .fs-stat .fs-stat-l{font-size:22px;color:var(--muted);margin-top:8px;}
+  .fs-vs{display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800;
+    color:var(--accent);letter-spacing:0.1em;}
+  .fs-panel{flex:1;min-height:0;display:flex;flex-direction:column;gap:14px;
+    background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:24px 26px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4);}
+  .fs-panel .fs-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+    font-size:32px;color:#fff;font-weight:800;}
+  .fs-legend{display:inline-flex;align-items:center;gap:10px;font-size:24px;color:var(--muted);font-weight:600;}
+  .fs-legend .sw{width:20px;height:20px;border-radius:6px;display:inline-block;margin-left:14px;}
+  .fs-legend .sw.imp{background:#5fb6d6;}
+  .fs-legend .sw.fair{background:#f0b14b;}
+  .fs-legend .sw.model{background:#7ee787;}
+  /* Elegant pre-match drift: per-outcome cards with a colored direction badge. */
+  .fs-drift{display:flex;flex-direction:column;gap:12px;flex:none;}
+  .fs-drift-title{font-size:24px;color:var(--muted);font-weight:700;letter-spacing:0.03em;}
+  .fs-drift-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .fs-drift-card{position:relative;overflow:hidden;background:var(--surface-2);
+    border:1px solid var(--line-soft);border-radius:16px;padding:16px 18px;
+    display:flex;flex-direction:column;gap:8px;}
+  .fs-drift-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;}
+  .fs-drift-card.dir-up::before{background:var(--positive);}
+  .fs-drift-card.dir-down::before{background:var(--alert);}
+  .fs-drift-card.dir-flat::before{background:var(--muted);}
+  .fs-drift-card .fdc-role{font-size:24px;color:#dbe3ee;font-weight:700;}
+  .fs-drift-card .fdc-flow{display:flex;align-items:baseline;gap:8px;font-variant-numeric:tabular-nums;}
+  .fs-drift-card .fdc-open{font-size:26px;color:var(--muted);}
+  .fs-drift-card .fdc-arrow{font-size:24px;color:var(--muted);}
+  .fs-drift-card .fdc-last{font-size:32px;color:#fff;font-weight:800;}
+  .fs-drift-card .fdc-delta{font-size:24px;font-weight:800;align-self:flex-start;
+    border-radius:999px;padding:4px 14px;font-variant-numeric:tabular-nums;}
+  .fs-drift-card.dir-up .fdc-delta{color:var(--positive);background:rgba(126,231,135,0.14);}
+  .fs-drift-card.dir-down .fdc-delta{color:var(--alert);background:rgba(255,123,114,0.14);}
+  .fs-drift-card.dir-flat .fdc-delta{color:var(--muted);background:rgba(148,163,184,0.14);}
+
+  /* ── v2 Act-4 upset charts (爆冷指标 cards + 主要驱动 bars) ─────────── */
+  .upset-charts{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;flex:1;min-height:0;}
+  .upset-charts.solo{grid-template-columns:1fr;}
+  .uc-panel{display:flex;flex-direction:column;gap:14px;min-height:0;
+    background:var(--surface);border:1px solid var(--line-soft);border-radius:18px;padding:20px 22px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.32);}
+  .uc-panel .uc-head{font-size:28px;color:#fff;font-weight:800;letter-spacing:0.02em;}
+  .cm-grid{display:grid;grid-template-columns:repeat(2,1fr);grid-auto-rows:1fr;gap:16px;
+    flex:1;min-height:0;}
+  .cm-card{position:relative;overflow:hidden;background:var(--surface-2);
+    border:1px solid var(--line-soft);border-radius:16px;padding:20px 20px 18px;
+    display:flex;flex-direction:column;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(0,0,0,0.28);}
+  .cm-card::before{content:"";position:absolute;left:0;top:0;right:0;height:4px;
+    background:linear-gradient(90deg,var(--accent),var(--hl));opacity:0.5;}
+  .cm-card.pct::before{background:linear-gradient(90deg,#f0b14b,#ff7b72);opacity:0.7;}
+  .cm-card .cm-val{font-size:54px;color:#fff;font-weight:800;line-height:1;
+    font-variant-numeric:tabular-nums;letter-spacing:0.01em;}
+  .cm-card.pct .cm-val{color:var(--warn);}
+  .cm-card .cm-label{font-size:27px;color:#dbe3ee;font-weight:700;}
+  .cm-card .cm-detail{font-size:21px;color:var(--muted);line-height:1.35;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+{{{avatarLayoutCss}}}
+</style>
+</head>
+<body>
+
+<div id="stage" class="{{#if bgImage}}has-bg{{/if}}" data-composition-id="{{matchId}}" data-start="0"
+     data-width="1080" data-height="1920" data-fps="{{fps}}">
+
+  <div class="aurora clip" data-start="0" data-duration="{{totalSec}}"></div>
+
+{{#if bgImage}}
+  <div class="bg-photo clip" data-start="0" data-duration="{{totalSec}}" style="background-image:url('{{bgImage}}')"></div>
+  <div class="bg-scrim clip" data-start="0" data-duration="{{totalSec}}"></div>
+{{/if}}
+
+{{#if coverImage}}
+  <div class="cover-poster clip" data-start="0" data-duration="{{coverSec}}">
+    <img src="{{coverImage}}" alt="" />
+  </div>
+{{/if}}
+
+  <div class="header clip" data-start="0" data-duration="{{totalSec}}">
+    <span class="league"><span class="dot"></span>{{brand}}</span>
+    <span class="pill">{{headerLabel}}</span>
+  </div>
+
+  {{#each scenes}}
+  <section id="{{id}}" class="scene clip" data-scene-id="{{id}}" data-start="{{startSec}}" data-duration="{{durSec}}">
+    {{> (scenePartial kind) }}
+  </section>
+  {{/each}}
+
+  <div class="avatar-band clip" data-avatar-band data-start="0" data-duration="{{totalSec}}">
+    <div class="avatar-fallback"><div class="ico">🎙️</div><div class="lbl">解说员</div></div>
+  </div>
+
+  <div class="footer clip" data-start="0" data-duration="{{totalSec}}">
+    赛前概率观察 · 仅供体育内容讨论 · 不作结果承诺 · 理性看球
+  </div>
+
+  {{#each audioLines}}
+  <audio id="{{id}}" src="audio/{{id}}.wav" data-start="{{startSec}}" data-duration="{{durSec}}"
+         data-track-index="{{trackIndex}}"></audio>
+  {{/each}}
+
+</div>
+
+<!-- All chart specs are embedded here so each scene can spin up its own ECharts instance(s). -->
+<script id="chart-data" type="application/json">{{{chartsJson}}}</script>
+
+<script>
+(function(){
+  const chartData = JSON.parse(document.getElementById('chart-data').textContent || '{}');
+  const stage = document.getElementById('stage');
+  const aurora = stage.querySelector('.aurora');
+  const cover = stage.querySelector('.cover-poster');
+  const scenes = stage.querySelectorAll('.scene');
+
+  // ──────────────────────────────────────────────────────────────────────
+  // 1. Build the master GSAP timeline FIRST and register it on window so
+  //    HyperFrames can seek even if ECharts init below fails for any reason.
+  // ──────────────────────────────────────────────────────────────────────
+  const tl = gsap.timeline({ paused: true });
+  tl.fromTo(aurora, { opacity: 0 }, { opacity: 0.65, duration: 2, ease: 'sine.inOut' }, 0);
+  if (cover) {
+    const coverDur = parseFloat(cover.getAttribute('data-duration') || '0');
+    if (coverDur > 0) {
+      tl.set(cover, { opacity: 1, display: 'block' }, 0);
+      tl.to(cover, { opacity: 0, duration: Math.min(0.55, coverDur), ease: 'power2.inOut' }, Math.max(0, coverDur - 0.55));
+      tl.set(cover, { display: 'none' }, coverDur);
+    }
+  }
+
+  scenes.forEach((sec) => {
+    const start = parseFloat(sec.getAttribute('data-start'));
+    const dur = parseFloat(sec.getAttribute('data-duration'));
+    tl.fromTo(sec, { opacity: 0, y: 24 },
+      { opacity: 1, y: 0, duration: 0.55, ease: 'power2.out' }, start);
+    tl.to(sec, { opacity: 0, duration: 0.45, ease: 'power2.in' }, start + dur - 0.45);
+
+    const reveals = sec.querySelectorAll('.strat-card, .paragraph-flow p, .list-beats li, .upset-score, .upset-card, .cs-row, .tf-card, .mg-card, .payoff-card .mini, .tf-hl, .uf-card, .ui-card, .risk-card, .boundary-card, .fs-panel, .fs-team, .fs-drift-card, .uc-panel, .cm-card, .cover-anime-panel .cf-o');
+    if (reveals.length) {
+      tl.fromTo(reveals, { opacity: 0, y: 24 },
+        { opacity: 1, y: 0, duration: 0.55, stagger: 0.12, ease: 'power2.out' },
+        start + 0.3);
+    }
+    const bars = sec.querySelectorAll('.bar-row .fill, .upset-score .bar .fill, .upset-card .uk-fill, .cs-row .bar-fill');
+    bars.forEach((bar) => {
+      const w = parseFloat(bar.dataset.scale || '0');
+      tl.fromTo(bar, { scaleX: 0 }, { scaleX: w, duration: 0.9, ease: 'power3.out' },
+        start + 0.5);
+    });
+    const kpis = sec.querySelectorAll('.kpi .v[data-target], .stat .v[data-target]');
+    kpis.forEach((el) => {
+      const target = parseFloat(el.dataset.target);
+      const suffix = el.dataset.suffix || '';
+      const obj = { v: 0 };
+      tl.to(obj, {
+        v: target, duration: 0.9, ease: 'power2.out',
+        onUpdate: () => { el.textContent = (Math.round(obj.v * 100) / 100) + suffix; }
+      }, start + 0.4);
+    });
+  });
+
+  tl.set({}, {}, {{totalSec}});
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines["{{matchId}}"] = tl;
+
+  // ──────────────────────────────────────────────────────────────────────
+  // 2. Initialise ECharts charts. Each block is wrapped so a single failure
+  //    can't tank the rest of the page (or block timeline registration).
+  // ──────────────────────────────────────────────────────────────────────
+  const ECHARTS_DARK = {
+    color: ['#6ea7ff','#a371f7','#7ee787','#f0b14b','#ff7b72','#5fb6d6'],
+    backgroundColor: 'transparent',
+    textStyle: { color: '#dbe3ee' },
+  };
+  function initChartIn(host, optBuilder){
+    if(!host || typeof echarts === 'undefined') return null;
+    try {
+      // ECharts measures the host on init. Make sure the box has positive
+      // dimensions even when the scene is briefly opacity:0 / y-translated.
+      const w = host.clientWidth  || host.parentElement?.clientWidth  || 480;
+      const h = host.clientHeight || host.parentElement?.clientHeight || 280;
+      const chart = echarts.init(host, null, { renderer: 'canvas', width: w, height: h });
+      const opt = optBuilder();
+      if (opt) {
+        chart.setOption({ ...ECHARTS_DARK, animation: false, ...opt });
+      }
+      // Re-measure synchronously in case flex layout settled after init.
+      // NOTE: keep this synchronous — async animation-frame callbacks never
+      // fire under hyperframes' virtual-time screenshot capture and detach
+      // the frame mid-render.
+      try { chart.resize(); } catch (e) {}
+      return chart;
+    } catch (err) {
+      console.error('[chart-init]', err);
+      return null;
+    }
+  }
+
+  // 1x2 market — donut (赛果分布 is 胜负平-only: 主胜/平局/客胜, no 让球)
+  document.querySelectorAll('[data-mg-1x2]').forEach(host => {
+    const d = chartData.result1x2 || chartData.market1x2;
+    if(!d) return;
+    initChartIn(host, () => ({
+      tooltip: { show: false },
+      legend: { show: false },
+      series: [{
+        type: 'pie',
+        radius: ['40%','58%'],
+        center: ['50%','52%'],
+        avoidLabelOverlap: false,
+        label: {
+          show: true, color:'#fff', fontSize: 24, fontWeight: 700,
+          formatter: ({ name, value, dataIndex }) => {
+            const o = d.outcomes[dataIndex];
+            return `${o.role}\n${value}%`;
+          },
+        },
+        labelLine: { show: false },
+        data: d.outcomes.map((o,i) => ({
+          name: o.role, value: o.pct,
+          // 高对比三色：绿=主胜 橙=平局 红=客胜 — 深色背景上清晰可辨
+          itemStyle: { color: i===0 ? '#4ade80' : i===1 ? '#f97316' : '#f87171' },
+        })),
+        emphasis: { scale: false },
+      }],
+    }));
+  });
+
+  // Total goals — column chart
+  document.querySelectorAll('[data-mg-tg]').forEach(host => {
+    const d = chartData.totalGoals;
+    if(!d) return;
+    const peakIdx = d.bars.reduce((mi,b,i,arr) => b.pct > arr[mi].pct ? i : mi, 0);
+    initChartIn(host, () => ({
+      grid: { top: 36, left: 44, right: 16, bottom: 38 },
+      xAxis: {
+        type: 'category',
+        data: d.bars.map(b => b.goals),
+        axisLine: { lineStyle: { color: '#2a313c' } },
+        axisLabel: { color: '#94a3b8', fontSize: 20, fontWeight: 600 },
+        axisTick: { show: false },
+      },
+      yAxis: {
+        type: 'value',
+        splitLine: { lineStyle: { color: '#21262d' } },
+        axisLabel: { color: '#94a3b8', fontSize: 18, formatter: '{value}%' },
+      },
+      series: [{
+        type: 'bar', barWidth: '64%',
+        label: { show: true, position: 'top', color: '#fff',
+          fontSize: 20, fontWeight: 700, formatter: '{c}%', distance: 6 },
+        data: d.bars.map((b,i) => ({
+          value: b.pct,
+          itemStyle: {
+            color: i===peakIdx
+              ? new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#f6d57a'},{offset:1,color:'#f0b14b'}])
+              : new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#6ea7ff'},{offset:1,color:'#4b86e0'}]),
+            borderRadius: [6,6,0,0],
+          },
+        })),
+      }],
+    }));
+  });
+
+  // HT/FT — heatmap
+  document.querySelectorAll('[data-mg-htft]').forEach(host => {
+    const d = chartData.htft;
+    if(!d) return;
+    const labels = ['主→','平→','客→'];
+    const cols   = ['→主','→平','→客'];
+    const data = [];
+    let max = 0;
+    d.rows.forEach((r,i) => r.cells.forEach((v,j) => { data.push([j,i,v]); if(v>max) max=v; }));
+    initChartIn(host, () => ({
+      grid: { top: 36, left: 70, right: 14, bottom: 30 },
+      tooltip: { show: false },
+      xAxis: {
+        type: 'category', data: cols, position: 'top',
+        axisLine: { show: false }, axisTick: { show: false },
+        axisLabel: { color: '#94a3b8', fontSize: 20, fontWeight: 600 },
+      },
+      yAxis: {
+        type: 'category', data: labels, inverse: true,
+        axisLine: { show: false }, axisTick: { show: false },
+        axisLabel: { color: '#94a3b8', fontSize: 20, fontWeight: 600 },
+      },
+      visualMap: {
+        show: false, min: 0, max: max,
+        inRange: { color: ['#1a2030','#2c4a7a','#6ea7ff','#a371f7'] },
+      },
+      series: [{
+        type: 'heatmap', data,
+        label: { show: true, color: '#fff', fontSize: 20, fontWeight: 700,
+          formatter: (p) => p.data[2].toFixed(1)+'%' },
+        itemStyle: { borderRadius: 6, borderWidth: 2, borderColor: '#0e1117' },
+      }],
+    }));
+  });
+
+  document.querySelectorAll('[data-upset-gauge]').forEach(host => {
+    const d = chartData.upset;
+    if(!d) return;
+    const probNum = parseFloat((d.probPct||'0').replace('%',''));
+    initChartIn(host, () => ({
+      series: [{
+        type: 'gauge',
+        startAngle: 210, endAngle: -30, min: 0, max: 100,
+        radius: '100%', center: ['50%','58%'],
+        progress: { show: true, width: 28, itemStyle: {
+          color: new echarts.graphic.LinearGradient(0,0,1,0,[
+            {offset:0,color:'#7ee787'},{offset:0.5,color:'#f0b14b'},{offset:1,color:'#ff7b72'},
+          ]),
+        }},
+        axisLine: { lineStyle: { width: 28, color: [[1, '#21262d']] } },
+        pointer: { show: false },
+        axisTick: { show: false }, splitLine: { show: false },
+        axisLabel: { color: '#94a3b8', fontSize: 16, distance: -38 },
+        title: { offsetCenter: [0, '40%'], color: '#94a3b8', fontSize: 24, fontWeight: 600 },
+        detail: {
+          valueAnimation: false,
+          formatter: (v) => v.toFixed(1)+'%',
+          color: '#fff', fontSize: 72, fontWeight: 800,
+          offsetCenter: [0, '0%'],
+        },
+        data: [{ value: probNum, name: '爆冷可能性' }],
+      }],
+    }));
+  });
+
+  // Watch boundary — chart-first dashboard for safe viewing strategy.
+  document.querySelectorAll('[data-boundary-map]').forEach(host => {
+    const m = chartData.market1x2;
+    const tg = chartData.totalGoals;
+    const up = chartData.upset;
+    const home = m?.outcomes?.[0]?.pct ?? 50;
+    const draw = m?.outcomes?.[1]?.pct ?? 25;
+    const away = m?.outcomes?.[2]?.pct ?? 25;
+    const ge3 = parseFloat(String(tg?.ge3pct ?? '0').replace('%','')) || 0;
+    const upset = parseFloat(String(up?.probPct ?? '0').replace('%','')) || draw + away;
+    initChartIn(host, () => ({
+      radar: {
+        center: ['52%','54%'], radius: '68%',
+        axisName: { color:'#cbd5e1', fontSize:20, fontWeight:700 },
+        splitNumber: 4,
+        splitArea: { areaStyle: { color:['rgba(110,167,255,.05)','rgba(163,113,247,.08)'] } },
+        axisLine: { lineStyle:{ color:'rgba(255,255,255,.16)' } },
+        splitLine:{ lineStyle:{ color:'rgba(255,255,255,.14)' } },
+        indicator: [
+          { name:'主队', max:100 }, { name:'平衡', max:100 },
+          { name:'反击', max:100 }, { name:'节奏', max:100 },
+        ],
+      },
+      series:[{
+        type:'radar',
+        symbol:'circle', symbolSize:6,
+        areaStyle:{ color:'rgba(110,167,255,.24)' },
+        lineStyle:{ width:4, color:'#6ea7ff' },
+        itemStyle:{ color:'#a371f7' },
+        data:[{ value:[home, draw, away, ge3] }],
+      }],
+    }));
+  });
+
+  document.querySelectorAll('[data-boundary-balance]').forEach(host => {
+    const d = chartData.market1x2;
+    if(!d) return;
+    initChartIn(host, () => ({
+      legend:{ show:false },
+      series:[{
+        type:'pie', radius:['42%','72%'], center:['54%','56%'],
+        label:{ show:true, color:'#fff', fontSize:24, fontWeight:800, formatter:'{c}%' },
+        labelLine:{ show:false },
+        data:d.outcomes.map((o,i)=>({
+          name:o.role, value:o.pct,
+          itemStyle:{ color:i===0?'#6ea7ff':i===1?'#f0b14b':'#a371f7' },
+        })),
+        emphasis:{ scale:false },
+      }],
+    }));
+  });
+
+  document.querySelectorAll('[data-boundary-goals]').forEach(host => {
+    const d = chartData.totalGoals;
+    if(!d) return;
+    initChartIn(host, () => ({
+      grid:{ top:48, left:36, right:18, bottom:34 },
+      xAxis:{ type:'category', data:d.bars.map(b=>b.goals),
+        axisLine:{ show:false }, axisTick:{ show:false },
+        axisLabel:{ color:'#94a3b8', fontSize:18, fontWeight:700 } },
+      yAxis:{ type:'value', show:false },
+      series:[{
+        type:'bar', barWidth:'58%',
+        data:d.bars.map((b,i)=>({
+          value:b.pct,
+          itemStyle:{ color:new echarts.graphic.LinearGradient(0,0,0,1,[
+            {offset:0,color:i===2?'#7ee787':'#6ea7ff'},
+            {offset:1,color:i===2?'#2ea043':'#345d9d'},
+          ]), borderRadius:[8,8,2,2] },
+        })),
+        label:{ show:true, position:'top', color:'#fff', fontSize:18, fontWeight:800, formatter:'{c}%' },
+      }],
+    }));
+  });
+
+  document.querySelectorAll('[data-boundary-safety]').forEach(host => {
+    initChartIn(host, () => ({
+      series:[{
+        type:'gauge', startAngle:220, endAngle:-40, min:0, max:100,
+        radius:'92%', center:['52%','58%'],
+        progress:{ show:true, width:30, itemStyle:{ color:'#f0b14b' } },
+        axisLine:{ lineStyle:{ width:30, color:[[1,'#21262d']] } },
+        pointer:{ show:false }, axisTick:{ show:false }, splitLine:{ show:false },
+        axisLabel:{ show:false },
+        detail:{ valueAnimation:false, formatter:'观察', color:'#fff', fontSize:46, fontWeight:900, offsetCenter:[0,'10%'] },
+        title:{ offsetCenter:[0,'48%'], color:'#94a3b8', fontSize:22, fontWeight:700 },
+        data:[{ value:86, name:'不作依据' }],
+      }],
+    }));
+  });
+
+  // ── v2 Act-2: team strength compare (normalised tug-of-war bars) ──────
+  document.querySelectorAll('[data-fs-compare]').forEach(host => {
+    const rows = chartData.compareMetrics || [];
+    if(!rows.length) return;
+    const cats = rows.map(r => r.label);
+    // Normalise each metric to its own pair-max so different scales (评分 vs
+    // 场均) sit on a comparable 0..100 axis; keep raw value in the label.
+    const norm = (v, r) => { const mx = Math.max(r.home, r.away) || 1; return Math.round((v/mx)*100); };
+    initChartIn(host, () => ({
+      grid: { top: 20, left: 96, right: 24, bottom: 24 },
+      xAxis: { type: 'value', max: 110, show: false },
+      yAxis: {
+        type: 'category', data: cats, inverse: true,
+        axisLine: { show: false }, axisTick: { show: false },
+        axisLabel: { color: '#cbd5e1', fontSize: 24, fontWeight: 700 },
+      },
+      series: [
+        { type:'bar', barGap:'-100%', barWidth: 22, z:1, silent:true,
+          itemStyle:{ color:'rgba(255,255,255,0.06)', borderRadius:11 },
+          data: cats.map(()=>110) },
+        { type:'bar', barWidth: 22, z:2,
+          itemStyle:{ color:'#6ea7ff', borderRadius:11 },
+          label:{ show:true, position:'right', color:'#fff', fontSize:22, fontWeight:800,
+            formatter:(p)=> String(rows[p.dataIndex].home) },
+          data: rows.map(r => norm(r.home, r)) },
+        { type:'scatter', symbolSize: 0, z:3,
+          label:{ show:true, position:'left', color:'#c8b3ff', fontSize:22, fontWeight:800,
+            formatter:(p)=> String(rows[p.dataIndex].away), distance: 8 },
+          data: rows.map((r,i)=> [norm(r.away, r), i]) },
+      ],
+    }));
+  });
+
+  // ── v2 Act-2: market signal — 胜负平 (隐含 / 公允 / 模型) adaptive bars ──
+  document.querySelectorAll('[data-fs-signal]').forEach(host => {
+    const sig = chartData.marketSignal;
+    if(!sig || !sig.rows || !sig.rows.length) return;
+    const cats = sig.rows.map(r => r.role);
+    const defs = [
+      { key:'implied', name:'隐含', color:'#5fb6d6', on: !!sig.hasImplied },
+      { key:'fair',    name:'公允', color:'#f0b14b', on: !!sig.hasFair },
+      { key:'model',   name:'模型', color:'#7ee787', on: sig.hasModel !== false },
+    ].filter(d => d.on);
+    const bw = defs.length >= 3 ? '20%' : defs.length === 2 ? '30%' : '44%';
+    const series = defs.map((d, i) => ({
+      name: d.name, type: 'bar', barWidth: bw,
+      itemStyle: { color: d.color, borderRadius: [6,6,0,0] },
+      label: i === defs.length - 1
+        ? { show:true, position:'top', color:'#fff', fontSize: defs.length>1?16:22, fontWeight:700, formatter:'{c}%' }
+        : undefined,
+      data: sig.rows.map(r => r[d.key]),
+    }));
+    initChartIn(host, () => ({
+      grid: { top: 30, left: 44, right: 16, bottom: 36 },
+      legend: { show: false },
+      xAxis: { type:'category', data:cats,
+        axisLine:{ lineStyle:{ color:'#2a313c' } }, axisTick:{ show:false },
+        axisLabel:{ color:'#cbd5e1', fontSize: defs.length>1?22:28, fontWeight:700 } },
+      yAxis: { type:'value', splitLine:{ lineStyle:{ color:'#21262d' } },
+        axisLabel:{ color:'#94a3b8', fontSize:16, formatter:'{value}%' } },
+      series,
+    }));
+  });
+
+  // ── v2 Act-4: upset complexity metrics (horizontal % bars) ───────────
+  document.querySelectorAll('[data-upset-complexity]').forEach(host => {
+    const ms = (chartData.upset && chartData.upset.complexityMetrics) || [];
+    const rows = ms.filter(m => typeof m.pct === 'number' && isFinite(m.pct));
+    if(!rows.length) return;
+    initChartIn(host, () => ({
+      grid: { top: 12, left: 110, right: 56, bottom: 12 },
+      xAxis: { type:'value', max:100, show:false },
+      yAxis: { type:'category', data: rows.map(r=>r.label), inverse:true,
+        axisLine:{ show:false }, axisTick:{ show:false },
+        axisLabel:{ color:'#cbd5e1', fontSize:22, fontWeight:700 } },
+      series: [{
+        type:'bar', barWidth: 20,
+        itemStyle:{ color:new echarts.graphic.LinearGradient(0,0,1,0,[
+          {offset:0,color:'#6ea7ff'},{offset:1,color:'#a371f7'}]), borderRadius:10 },
+        label:{ show:true, position:'right', color:'#fff', fontSize:22, fontWeight:800, formatter:'{c}%' },
+        data: rows.map(r=>r.pct),
+      }],
+    }));
+  });
+
+  // ── v2 Act-4: upset main drivers (horizontal % bars) ─────────────────
+  document.querySelectorAll('[data-upset-drivers]').forEach(host => {
+    const rows = (chartData.upset && chartData.upset.drivers) || [];
+    if(!rows.length) return;
+    initChartIn(host, () => ({
+      grid: { top: 12, left: 110, right: 56, bottom: 12 },
+      xAxis: { type:'value', max:100, show:false },
+      yAxis: { type:'category', data: rows.map(r=>r.label), inverse:true,
+        axisLine:{ show:false }, axisTick:{ show:false },
+        axisLabel:{ color:'#cbd5e1', fontSize:22, fontWeight:700 } },
+      series: [{
+        type:'bar', barWidth: 20,
+        itemStyle:{ color:new echarts.graphic.LinearGradient(0,0,1,0,[
+          {offset:0,color:'#f0b14b'},{offset:1,color:'#ff7b72'}]), borderRadius:10 },
+        label:{ show:true, position:'right', color:'#fff', fontSize:22, fontWeight:800, formatter:'{c}%' },
+        data: rows.map(r=>r.pct),
+      }],
+    }));
+  });
+
+  if (!window.__hyperframes_render) tl.play();
+})();
+</script>
+
+</body>
+</html>

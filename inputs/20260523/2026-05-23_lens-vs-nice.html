@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0e1117">
+<title>朗斯 vs 尼斯 模拟研究报告</title>
+<style>
+:root{
+  --bg:#0e1117;
+  --surface:#161b22;
+  --surface-2:#1c2230;
+  --surface-3:#222a37;
+  --border:#2a313c;
+  --border-soft:#212833;
+  --text:#e6edf3;
+  --text-dim:#8b949e;
+  --text-bright:#ffffff;
+  --accent:#6ea7ff;
+  --accent-soft:rgba(110,167,255,0.18);
+  --accent-strong:#4b86e0;
+  --positive:#7ee787;
+  --warn:#f0b14b;
+  --alert:#ff7b72;
+  --bar-bg:#21262d;
+  --radius:10px;
+  --radius-sm:6px;
+  --pad:1rem;
+  --pad-lg:1.25rem;
+  --pad-sm:0.5rem;
+  --shadow:0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.35);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",
+    "Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;}
+body{padding:1rem;max-width:1080px;margin:0 auto;}
+a{color:var(--accent);text-decoration:none;}
+a:hover{text-decoration:underline;}
+h1,h2,h3,h4{color:var(--text-bright);font-weight:600;line-height:1.3;margin:0;}
+p{margin:0 0 0.6rem 0;}
+small{color:var(--text-dim);}
+hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0;}
+
+.compliance-banner{display:flex;align-items:center;gap:0.5rem;
+  padding:0.5rem 0.8rem;border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--surface);color:var(--text-dim);font-size:0.82rem;
+  margin-bottom:1rem;}
+.compliance-banner .dot{width:0.5rem;height:0.5rem;border-radius:50%;
+  background:var(--warn);flex:none;}
+
+.hero{padding:var(--pad-lg);
+  background:linear-gradient(140deg,var(--surface) 0%,var(--surface-2) 100%);
+  border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);
+  margin-bottom:1rem;}
+.hero h1{font-size:1.5rem;margin-bottom:0.4rem;}
+.hero .sub{color:var(--text-dim);font-size:0.9rem;}
+.hero .headline{margin-top:0.6rem;padding:0.6rem 0.8rem;border-left:3px solid var(--accent);
+  background:var(--accent-soft);border-radius:var(--radius-sm);color:var(--text);}
+
+section.m{margin:0 0 1rem 0;padding:var(--pad-lg);background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);}
+section.m h2{font-size:1.15rem;margin-bottom:0.8rem;display:flex;align-items:center;gap:0.4rem;}
+section.m h2 .ordinal{display:inline-flex;align-items:center;justify-content:center;
+  width:1.7rem;height:1.7rem;border-radius:50%;background:var(--accent-soft);
+  color:var(--accent);font-size:0.85rem;font-weight:700;flex:none;}
+section.m h3{font-size:1rem;color:var(--text-bright);margin:0.4rem 0 0.6rem 0;}
+section.m h4{font-size:0.9rem;color:var(--text);margin:0.8rem 0 0.4rem 0;
+  text-transform:uppercase;letter-spacing:0.04em;}
+
+.teams{display:grid;grid-template-columns:1fr auto 1fr;gap:0.6rem;align-items:stretch;}
+.team{background:var(--surface-2);border:1px solid var(--border-soft);
+  border-radius:var(--radius-sm);padding:0.8rem;display:flex;flex-direction:column;gap:0.3rem;}
+.team .name{font-weight:600;color:var(--text-bright);font-size:1.05rem;}
+.team .role{font-size:0.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;}
+.team .stats{display:flex;flex-wrap:wrap;gap:0.5rem 1rem;margin-top:0.3rem;}
+.team .stat{display:flex;flex-direction:column;}
+.team .stat .label{font-size:0.72rem;color:var(--text-dim);}
+.team .stat .value{font-size:1.05rem;font-variant-numeric:tabular-nums;color:var(--text-bright);}
+.team.away{text-align:right;}
+.team.away .stats{justify-content:flex-end;}
+.vs{display:flex;align-items:center;justify-content:center;font-size:0.85rem;
+  color:var(--text-dim);font-weight:600;letter-spacing:0.1em;padding:0 0.4rem;}
+
+dl.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:0.4rem 0.8rem;margin:0.8rem 0 0 0;padding:0;}
+dl.meta div{background:var(--surface-2);border:1px solid var(--border-soft);
+  border-radius:var(--radius-sm);padding:0.4rem 0.6rem;}
+dl.meta dt{font-size:0.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;}
+dl.meta dd{margin:0;font-size:0.95rem;color:var(--text-bright);font-variant-numeric:tabular-nums;}
+
+.predictions-grid{display:grid;grid-template-columns:repeat(2,1fr);
+  gap:0.8rem;align-items:stretch;}
+.card{background:var(--surface-2);border:1px solid var(--border-soft);
+  border-radius:var(--radius-sm);padding:0.85rem;
+  display:flex;flex-direction:column;gap:0.55rem;min-height:260px;}
+.card > h3{margin:0 0 0.25rem 0;font-size:0.95rem;}
+.card .chart{flex:1;display:flex;flex-direction:column;justify-content:center;}
+.card.wide{grid-column:1/-1;}
+
+/* ── 胜平负 (1x2) ─────────────────────────────────────────────────────── */
+.market-1x2 .outcomes{display:grid;grid-template-columns:repeat(3,1fr);
+  gap:0.45rem;margin-bottom:0.6rem;}
+.market-1x2 .outcome{position:relative;background:var(--surface-3);
+  border:1px solid var(--border-soft);border-radius:var(--radius-sm);
+  padding:0.55rem 0.4rem;text-align:center;
+  display:flex;flex-direction:column;gap:0.15rem;
+  transition:none;}
+.market-1x2 .outcome.lead{background:var(--accent-soft);
+  border-color:var(--accent);box-shadow:0 0 0 1px var(--accent-soft),
+  0 4px 14px rgba(110,167,255,0.18);}
+.market-1x2 .outcome .role{font-size:0.68rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:0.06em;font-weight:500;}
+.market-1x2 .outcome .team{font-weight:600;color:var(--text-bright);
+  font-size:0.85rem;line-height:1.2;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;}
+.market-1x2 .outcome .pct{font-size:1.55rem;font-variant-numeric:tabular-nums;
+  color:var(--text-bright);font-weight:600;line-height:1.1;
+  margin-top:0.15rem;}
+.market-1x2 .outcome.lead .pct{color:var(--accent);}
+.market-1x2 .outcome .crown{position:absolute;top:0.3rem;right:0.4rem;
+  font-size:0.7rem;color:var(--accent);}
+.market-1x2 .prop-bar{display:flex;height:0.55rem;border-radius:999px;
+  overflow:hidden;background:var(--bar-bg);}
+.market-1x2 .prop-bar .seg{height:100%;}
+.market-1x2 .prop-bar .seg.home{background:linear-gradient(90deg,
+  var(--accent) 0%,var(--accent-strong) 100%);}
+.market-1x2 .prop-bar .seg.draw{background:var(--text-dim);}
+.market-1x2 .prop-bar .seg.away{background:linear-gradient(90deg,
+  #a371f7 0%,#7e4fd9 100%);}
+.market-1x2 .legend{display:flex;justify-content:space-between;
+  font-size:0.7rem;color:var(--text-dim);margin-top:0.2rem;
+  font-variant-numeric:tabular-nums;}
+.market-1x2 .legend .swatch{display:inline-block;width:0.55rem;height:0.55rem;
+  border-radius:50%;margin-right:0.25rem;vertical-align:middle;}
+.market-1x2 .legend .swatch.home{background:var(--accent);}
+.market-1x2 .legend .swatch.draw{background:var(--text-dim);}
+.market-1x2 .legend .swatch.away{background:#a371f7;}
+
+/* ── 总进球 (column chart) ────────────────────────────────────────────── */
+.market-tg .columns{display:grid;grid-template-columns:repeat(8,1fr);
+  gap:0.35rem;height:130px;align-items:end;padding:0 0.1rem;
+  border-bottom:1px solid var(--border-soft);}
+.market-tg .col{position:relative;background:linear-gradient(180deg,
+  rgba(110,167,255,0.5) 0%,var(--accent-strong) 100%);
+  border-radius:4px 4px 0 0;min-height:3px;}
+.market-tg .col.peak{background:linear-gradient(180deg,
+  rgba(240,177,75,0.6) 0%,var(--warn) 100%);
+  box-shadow:0 -2px 8px rgba(240,177,75,0.35);}
+.market-tg .col .pct{position:absolute;top:-1.2rem;left:50%;
+  transform:translateX(-50%);font-size:0.72rem;color:var(--text);
+  font-variant-numeric:tabular-nums;white-space:nowrap;}
+.market-tg .col.peak .pct{color:var(--warn);font-weight:600;}
+.market-tg .labels{display:grid;grid-template-columns:repeat(8,1fr);
+  gap:0.35rem;font-size:0.72rem;color:var(--text-dim);text-align:center;
+  font-variant-numeric:tabular-nums;margin-top:0.4rem;padding:0 0.1rem;}
+.market-tg .labels span.peak{color:var(--warn);font-weight:600;}
+.market-tg .summary{font-size:0.78rem;color:var(--text-dim);
+  border-top:1px dashed var(--border-soft);padding-top:0.45rem;
+  margin-top:0.4rem;}
+.market-tg .summary b{color:var(--text);}
+
+/* ── 比分 (correct_score) — matrix + side list ────────────────────────── */
+.market-cs .cs-body{display:grid;grid-template-columns:1.4fr 1fr;gap:0.6rem;
+  align-items:start;}
+.market-cs table.cs-matrix{width:100%;border-collapse:separate;
+  border-spacing:2px;font-size:0.78rem;}
+.market-cs table.cs-matrix th{color:var(--text-dim);font-weight:500;
+  font-size:0.7rem;padding:0.1rem;letter-spacing:0.04em;
+  text-transform:uppercase;}
+.market-cs table.cs-matrix th.axis{color:var(--text);}
+.market-cs table.cs-matrix td.cell{padding:0.22rem 0.05rem;text-align:center;
+  border-radius:3px;font-variant-numeric:tabular-nums;
+  background:rgba(110,167,255,0.06);color:var(--text-dim);}
+.market-cs table.cs-matrix td.cell.draw{background:rgba(255,255,255,0.04);}
+.market-cs table.cs-matrix td.cell.has-value{color:var(--text);}
+.market-cs table.cs-matrix td.cell.top{outline:1px solid var(--accent);
+  color:var(--text-bright);font-weight:600;}
+.market-cs .axis-label{font-size:0.6rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:0.06em;font-weight:500;
+  margin-top:0.25rem;text-align:center;}
+.market-cs .top-list{display:flex;flex-direction:column;gap:0.3rem;}
+.market-cs .top-list .heading{font-size:0.68rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:0.06em;}
+.market-cs .top-list .item{display:flex;align-items:baseline;
+  justify-content:space-between;padding:0.32rem 0.5rem;
+  background:var(--surface-3);border-radius:var(--radius-sm);font-size:0.83rem;}
+.market-cs .top-list .item.lead{background:var(--accent-soft);
+  border:1px solid var(--accent);}
+.market-cs .top-list .item .score{color:var(--text-bright);font-weight:600;
+  font-variant-numeric:tabular-nums;}
+.market-cs .top-list .item.lead .score{color:var(--accent);}
+.market-cs .top-list .item .pct{color:var(--text-dim);
+  font-variant-numeric:tabular-nums;}
+.market-cs .extras{font-size:0.7rem;color:var(--text-dim);
+  border-top:1px dashed var(--border-soft);padding-top:0.4rem;margin-top:0.4rem;}
+
+/* ── 半全场 (ht_ft matrix with marginals) ─────────────────────────────── */
+table.htft{width:100%;border-collapse:separate;border-spacing:2px;
+  font-size:0.85rem;}
+table.htft th{background:transparent;color:var(--text-dim);
+  font-weight:500;padding:0.25rem;text-align:center;font-size:0.75rem;
+  text-transform:uppercase;letter-spacing:0.04em;}
+table.htft th.axis{color:var(--text);}
+table.htft td{border-radius:3px;text-align:center;padding:0.32rem 0.2rem;
+  font-variant-numeric:tabular-nums;color:var(--text);}
+table.htft td.cell{position:relative;}
+table.htft td.marg{background:var(--surface-3);color:var(--text);
+  font-weight:600;}
+table.htft tfoot th{color:var(--text);font-weight:600;
+  font-size:0.7rem;text-transform:none;letter-spacing:0;}
+.market-htft .legend{font-size:0.7rem;color:var(--text-dim);
+  margin-top:0.45rem;display:flex;justify-content:space-between;
+  border-top:1px dashed var(--border-soft);padding-top:0.4rem;}
+.market-htft .legend b{color:var(--text);}
+
+.callout{margin-top:0.8rem;padding:0.6rem 0.85rem;background:var(--surface-3);
+  border-left:3px solid var(--accent);border-radius:var(--radius-sm);
+  color:var(--text);font-size:0.95rem;line-height:1.55;}
+.callout strong{color:var(--text-bright);}
+
+/* ── §③ 爆冷可能性 ───────────────────────────────────────────────────── */
+.upset-hero{display:grid;grid-template-columns:auto 1fr auto;gap:1.1rem;
+  align-items:stretch;padding:1rem 1.2rem;
+  background:linear-gradient(135deg,var(--surface-2) 0%,var(--surface-3) 100%);
+  border:1px solid var(--border-soft);border-radius:var(--radius);
+  box-shadow:var(--shadow);}
+.upset-hero .gauge{display:flex;flex-direction:column;align-items:flex-start;
+  justify-content:center;min-width:8rem;}
+.upset-hero .gauge .value{font-size:2.6rem;line-height:1;font-weight:700;
+  color:var(--warn);font-variant-numeric:tabular-nums;
+  letter-spacing:-0.02em;}
+.upset-hero .gauge .caption{font-size:0.7rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:0.08em;margin-top:0.4rem;}
+.upset-hero.band-strong .gauge .value{color:var(--positive);}
+.upset-hero.band-tight .gauge .value{color:var(--alert);}
+.upset-hero .narrative p{margin:0 0 0.5rem 0;color:var(--text);
+  font-size:0.95rem;line-height:1.5;}
+.upset-hero .narrative .meta{display:flex;flex-wrap:wrap;gap:0.5rem;
+  align-items:center;font-size:0.8rem;color:var(--text-dim);}
+.upset-hero .narrative .chip{display:inline-block;padding:0.15rem 0.55rem;
+  background:var(--accent-soft);color:var(--accent);
+  border:1px solid var(--accent);border-radius:999px;
+  font-size:0.72rem;font-weight:600;letter-spacing:0.04em;}
+.upset-hero.band-strong .narrative .chip{background:rgba(126,231,135,0.12);
+  color:var(--positive);border-color:var(--positive);}
+.upset-hero.band-tight .narrative .chip{background:rgba(255,123,114,0.12);
+  color:var(--alert);border-color:var(--alert);}
+.upset-hero .narrative .fav{font-variant-numeric:tabular-nums;}
+.upset-hero .favmeter{display:flex;flex-direction:column;align-items:center;
+  gap:0.35rem;}
+.upset-hero .favmeter .track{width:0.6rem;height:5.5rem;
+  background:var(--bar-bg);border-radius:999px;overflow:hidden;
+  position:relative;display:flex;align-items:flex-end;}
+.upset-hero .favmeter .fill{width:100%;background:linear-gradient(180deg,
+  var(--accent) 0%,var(--accent-strong) 100%);border-radius:999px 999px 0 0;}
+.upset-hero .favmeter .meter-cap{font-size:0.62rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:0.06em;}
+
+.upset-scores-wrap{margin-top:1rem;}
+.upset-scores-head{display:flex;flex-wrap:wrap;gap:0.4rem 1rem;
+  align-items:baseline;margin-bottom:0.6rem;}
+.upset-scores-head h4{margin:0;font-size:0.85rem;color:var(--text-bright);
+  text-transform:uppercase;letter-spacing:0.06em;}
+.upset-scores-head .hint{margin:0;font-size:0.78rem;color:var(--text-dim);
+  flex:1;line-height:1.45;}
+.upset-scores{display:grid;grid-template-columns:repeat(4,1fr);gap:0.6rem;}
+.upset-score-card{background:var(--surface-2);border:1px solid var(--border-soft);
+  border-left:3px solid #a371f7;border-radius:var(--radius-sm);
+  padding:0.65rem 0.85rem;display:flex;flex-direction:column;gap:0.45rem;
+  min-height:96px;}
+.upset-score-card.top{border-color:var(--warn);
+  background:linear-gradient(135deg,rgba(240,177,75,0.06) 0%,
+  var(--surface-2) 80%);box-shadow:inset 0 0 0 1px rgba(240,177,75,0.25);}
+.upset-score-card .head{display:flex;justify-content:space-between;
+  align-items:baseline;gap:0.5rem;}
+.upset-score-card .score{font-size:1.6rem;line-height:1;font-weight:700;
+  color:var(--text-bright);font-variant-numeric:tabular-nums;
+  letter-spacing:-0.01em;}
+.upset-score-card .pct{font-size:1rem;color:var(--warn);font-weight:600;
+  font-variant-numeric:tabular-nums;}
+.upset-score-card.top .pct{color:var(--warn);}
+.upset-score-card .interp{font-size:0.72rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:0.06em;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;}
+.upset-score-card .interp.result-home{color:var(--accent);}
+.upset-score-card .interp.result-away{color:#a371f7;}
+.upset-score-card .interp.result-draw{color:var(--text-dim);}
+.upset-score-card .meter{height:0.3rem;background:var(--bar-bg);
+  border-radius:999px;overflow:hidden;}
+.upset-score-card .meter .fill{height:100%;
+  background:linear-gradient(90deg,#a371f7 0%,#7e4fd9 100%);
+  border-radius:999px;}
+.upset-score-card.top .meter .fill{background:linear-gradient(90deg,
+  var(--warn) 0%,#d68a30 100%);}
+
+.tag{display:inline-block;font-size:0.7rem;padding:0.1rem 0.4rem;border-radius:999px;
+  background:var(--surface-3);color:var(--text-dim);border:1px solid var(--border-soft);
+  margin-right:0.25rem;}
+.tag.band{background:var(--accent-soft);color:var(--accent);border-color:transparent;}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.6rem;
+  margin-bottom:0.8rem;}
+.kpi{background:var(--surface-2);border:1px solid var(--border-soft);
+  border-radius:var(--radius-sm);padding:0.6rem 0.8rem;display:flex;flex-direction:column;}
+.kpi .label{font-size:0.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;}
+.kpi .value{font-size:1.2rem;font-variant-numeric:tabular-nums;color:var(--text-bright);
+  font-weight:600;margin-top:0.1rem;}
+.kpi .value.simulated{color:var(--warn);}
+.kpi small{display:block;font-size:0.7rem;color:var(--text-dim);}
+
+table.bets{width:100%;border-collapse:collapse;font-size:0.86rem;}
+table.bets th,table.bets td{border-bottom:1px solid var(--border-soft);
+  padding:0.5rem 0.6rem;text-align:right;font-variant-numeric:tabular-nums;}
+table.bets th{background:var(--surface-3);color:var(--text-dim);font-weight:500;
+  text-align:right;text-transform:uppercase;font-size:0.72rem;letter-spacing:0.04em;}
+table.bets th:first-child,table.bets td:first-child,
+table.bets th:nth-child(2),table.bets td:nth-child(2){text-align:left;}
+table.bets td.simulated{color:var(--warn);}
+table.bets tr:last-child td{border-bottom:none;}
+
+.strategy-disclaimer{margin:0 0 0.8rem 0;padding:0.5rem 0.7rem;
+  background:rgba(240,177,75,0.10);border:1px solid rgba(240,177,75,0.35);
+  border-radius:var(--radius-sm);font-size:0.85rem;color:var(--warn);}
+.strategy-disclaimer strong{color:var(--warn);}
+
+.profiles-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0.7rem;
+  margin-bottom:1rem;align-items:stretch;}
+.profile-card{background:var(--surface-2);border:1px solid var(--border-soft);
+  border-left:3px solid var(--accent);border-radius:var(--radius-sm);
+  padding:0.7rem 0.85rem;display:flex;flex-direction:column;gap:0.4rem;
+  min-height:170px;}
+.profile-card.p-conservative{border-left-color:var(--positive);}
+.profile-card.p-aggressive{border-left-color:var(--alert);}
+.profile-card.p-hunter{border-left-color:var(--warn);}
+.profile-card.p-upset{border-left-color:#a371f7;}
+.profile-card .head{display:flex;align-items:center;gap:0.4rem;}
+.profile-card .head .icon{font-size:1.15rem;line-height:1;flex:none;}
+.profile-card .head .name{font-weight:600;color:var(--text-bright);
+  font-size:1rem;flex:1;}
+.profile-card .head .risk{font-size:0.7rem;color:var(--text-dim);
+  background:var(--surface-3);padding:0.1rem 0.5rem;border-radius:999px;
+  border:1px solid var(--border-soft);}
+.profile-card .picks{display:flex;flex-direction:column;gap:0.3rem;}
+.profile-card .pick{display:flex;justify-content:space-between;align-items:baseline;
+  padding:0.32rem 0.5rem;background:var(--surface-3);
+  border-radius:var(--radius-sm);font-size:0.85rem;gap:0.6rem;}
+.profile-card .pick .lhs{color:var(--text);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;}
+.profile-card .pick .lhs .mkt{color:var(--text-dim);font-size:0.72rem;
+  text-transform:uppercase;letter-spacing:0.04em;margin-right:0.35rem;}
+.profile-card .pick .pick-meta{display:flex;align-items:baseline;gap:0.45rem;
+    flex:none;white-space:nowrap;font-variant-numeric:tabular-nums;}
+.profile-card .pick .pp{color:var(--text-bright);font-variant-numeric:tabular-nums;
+  font-weight:600;flex:none;}
+.profile-card .pick .pp-odds{color:var(--accent);font-size:0.78rem;}
+.profile-card .pick .pp-stake{color:var(--warn);font-weight:600;}
+.profile-card .stake{font-size:0.82rem;color:var(--warn);margin-top:auto;
+  font-variant-numeric:tabular-nums;}
+.profile-card .stake b{color:var(--warn);font-size:0.92rem;}
+.profile-card .stake .stake-sub{color:var(--text-dim);font-size:0.72rem;
+  margin-left:0.25rem;}
+.profile-card.empty{opacity:0.65;}
+.profile-card.empty .picks{color:var(--text-dim);font-size:0.82rem;
+  font-style:italic;padding:0.4rem 0;}
+
+.strategy-exec-heading{font-size:0.85rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:0.06em;margin:1rem 0 0.5rem 0;
+  border-top:1px dashed var(--border);padding-top:0.7rem;}
+
+/* ── §④ 假设命中收益 (single-scenario ¥100 card grid) ─────────────────── */
+.payoff-block{margin-top:0.4rem;}
+.payoff-hero{display:grid;grid-template-columns:auto 1fr auto;gap:1rem;
+  align-items:center;padding:0.85rem 1.1rem;
+  background:linear-gradient(135deg,var(--surface-2) 0%,var(--surface-3) 100%);
+  border:1px solid var(--border-soft);border-radius:var(--radius);
+  margin-bottom:0.8rem;box-shadow:var(--shadow);}
+.payoff-hero .scenario{display:flex;flex-direction:column;
+  align-items:flex-start;gap:0.3rem;}
+.payoff-hero .scenario .label{font-size:0.68rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:0.06em;}
+.payoff-hero .scenario .score{font-size:2.4rem;font-weight:700;
+  color:var(--text-bright);line-height:1;font-variant-numeric:tabular-nums;
+  letter-spacing:-0.02em;}
+.payoff-hero .scenario .prob{font-size:0.78rem;color:var(--accent);
+  font-variant-numeric:tabular-nums;}
+.payoff-hero .scenario-meta{display:flex;flex-direction:column;
+  gap:0.35rem;color:var(--text);font-size:0.85rem;}
+.payoff-hero .scenario-meta .row{display:flex;gap:0.5rem;
+  align-items:baseline;}
+.payoff-hero .scenario-meta .row .k{font-size:0.7rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:0.06em;min-width:4rem;}
+.payoff-hero .scenario-meta .row .v{color:var(--text-bright);font-weight:500;}
+.payoff-hero .bankroll{display:flex;flex-direction:column;
+  align-items:flex-end;gap:0.2rem;padding-left:0.8rem;
+  border-left:1px solid var(--border-soft);}
+.payoff-hero .bankroll .label{font-size:0.68rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:0.06em;}
+.payoff-hero .bankroll .value{font-size:1.6rem;font-weight:700;
+  color:var(--warn);font-variant-numeric:tabular-nums;line-height:1;}
+.payoff-hero .bankroll small{font-size:0.7rem;color:var(--text-dim);}
+
+.payoff-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:0.7rem;}
+.payoff-card{background:var(--surface-2);border:1px solid var(--border-soft);
+  border-left:3px solid var(--accent);border-radius:var(--radius-sm);
+  padding:0.8rem 0.9rem;display:flex;flex-direction:column;gap:0.5rem;
+  min-height:170px;}
+.payoff-card.p-conservative{border-left-color:var(--positive);}
+.payoff-card.p-aggressive{border-left-color:var(--alert);}
+.payoff-card.p-hunter{border-left-color:var(--warn);}
+.payoff-card.p-upset{border-left-color:#a371f7;}
+.payoff-card .head{display:flex;align-items:baseline;
+  justify-content:space-between;gap:0.4rem;}
+.payoff-card .head .name{display:flex;align-items:center;gap:0.35rem;
+  font-weight:600;color:var(--text-bright);font-size:1rem;}
+.payoff-card .head .name .icon{font-size:1.05rem;line-height:1;}
+.payoff-card .head .stake{font-size:0.72rem;color:var(--text-dim);
+  font-variant-numeric:tabular-nums;white-space:nowrap;}
+.payoff-card .profit{font-size:1.85rem;line-height:1;font-weight:700;
+  font-variant-numeric:tabular-nums;letter-spacing:-0.02em;}
+.payoff-card .profit.gain{color:var(--positive);}
+.payoff-card .profit.loss{color:var(--alert);}
+.payoff-card .profit.neutral{color:var(--text-dim);}
+.payoff-card .profit small{font-size:0.65rem;color:var(--text-dim);
+  font-weight:500;text-transform:uppercase;letter-spacing:0.06em;
+  margin-left:0.4rem;display:inline-block;vertical-align:middle;}
+.payoff-card .breakdown{display:flex;flex-direction:column;gap:0;
+  font-size:0.82rem;background:rgba(0,0,0,0.18);
+  border-radius:var(--radius-sm);padding:0.35rem 0.55rem;}
+.payoff-card .pick-row{display:grid;
+  grid-template-columns:auto 1fr auto auto;gap:0.55rem;
+  align-items:baseline;padding:0.25rem 0;
+  border-top:1px dashed var(--border-soft);}
+.payoff-card .pick-row:first-child{border-top:none;}
+.payoff-card .pick-row .check{font-weight:600;font-size:0.85rem;
+  width:1.1rem;text-align:center;line-height:1;}
+.payoff-card .pick-row .check.hit{color:var(--positive);}
+.payoff-card .pick-row .check.miss{color:var(--alert);}
+.payoff-card .pick-row .pick-label{color:var(--text);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.payoff-card .pick-row .pick-label .mkt{color:var(--text-dim);
+  font-size:0.68rem;text-transform:uppercase;letter-spacing:0.04em;
+  margin-right:0.3rem;}
+.payoff-card .pick-row .stake-val{color:var(--text-dim);
+  font-variant-numeric:tabular-nums;font-size:0.74rem;}
+.payoff-card .pick-row .delta{font-variant-numeric:tabular-nums;
+  font-weight:600;}
+.payoff-card .pick-row .delta.gain{color:var(--positive);}
+.payoff-card .pick-row .delta.loss{color:var(--alert);}
+.payoff-card .wallet{font-size:0.75rem;color:var(--text-dim);
+  display:flex;justify-content:space-between;margin-top:auto;
+  border-top:1px dashed var(--border-soft);padding-top:0.4rem;}
+.payoff-card .wallet b{color:var(--text);font-variant-numeric:tabular-nums;}
+.payoff-card.empty .profit{font-size:1.2rem;color:var(--text-dim);}
+.payoff-card.empty .breakdown{font-style:italic;color:var(--text-dim);
+  padding:0.5rem;}
+
+.findings{margin-top:0.8rem;display:flex;flex-direction:column;gap:0.5rem;}
+.finding{padding:0.6rem 0.8rem;border-left:3px solid var(--accent);
+  background:var(--surface-2);border-radius:var(--radius-sm);}
+.finding.tone-warn{border-left-color:var(--warn);}
+.finding.tone-alert{border-left-color:var(--alert);}
+.finding .ftitle{font-weight:600;color:var(--text-bright);font-size:0.95rem;
+  margin-bottom:0.2rem;display:flex;align-items:center;gap:0.4rem;}
+.finding .fbody p{margin:0.2rem 0;color:var(--text);}
+.finding .fbody p:first-child{margin-top:0;}
+.finding .fbody p:last-child{margin-bottom:0;}
+.finding code{background:var(--surface-3);padding:0.05rem 0.3rem;border-radius:3px;
+  font-size:0.88em;color:var(--accent);}
+
+/* ── Extended safe-markdown blocks (tables/lists/headers/blockquotes) ── */
+.finding .fbody .md-h{
+  margin:0.55rem 0 0.3rem;color:var(--text-bright);font-size:0.95rem;
+  font-weight:600;letter-spacing:0.01em;}
+.finding .fbody .md-h:first-child{margin-top:0;}
+.finding .fbody .md-list{margin:0.3rem 0 0.3rem 1.1rem;padding:0;color:var(--text);}
+.finding .fbody .md-list li{margin:0.12rem 0;line-height:1.5;}
+.finding .fbody .md-list li::marker{color:var(--accent);}
+.finding .fbody .md-quote{
+  margin:0.4rem 0;padding:0.35rem 0.7rem;
+  border-left:3px solid var(--border);background:var(--surface-3);
+  color:var(--text-dim);font-size:0.88rem;border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
+.finding .fbody .md-table{
+  width:100%;border-collapse:collapse;margin:0.45rem 0;
+  font-variant-numeric:tabular-nums;font-size:0.85rem;
+  background:var(--surface-3);border-radius:var(--radius-sm);overflow:hidden;}
+.finding .fbody .md-table th{
+  text-align:left;padding:0.35rem 0.55rem;
+  background:var(--surface-2);color:var(--text-bright);
+  font-weight:600;font-size:0.82rem;letter-spacing:0.02em;
+  border-bottom:1px solid var(--border);}
+.finding .fbody .md-table td{
+  padding:0.3rem 0.55rem;color:var(--text);
+  border-top:1px solid var(--border-soft);}
+.finding .fbody .md-table tr:hover td{background:var(--surface-2);}
+
+.empty-note{padding:0.6rem 0.8rem;background:var(--surface-2);
+  border:1px dashed var(--border);border-radius:var(--radius-sm);
+  color:var(--text-dim);font-size:0.85rem;}
+
+.settlement-actual{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:0.6rem;margin-bottom:0.6rem;}
+
+footer.page{margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);
+  color:var(--warn);font-size:0.78rem;text-align:center;}
+
+@media (max-width: 720px){
+  body{padding:0.6rem;}
+  .hero{padding:1rem;}
+  section.m{padding:0.8rem;}
+  .teams{grid-template-columns:1fr;}
+  .team.away{text-align:left;}
+  .team.away .stats{justify-content:flex-start;}
+  .vs{display:none;}
+  .predictions-grid{grid-template-columns:1fr;}
+  .profiles-grid{grid-template-columns:1fr;}
+  .card{min-height:0;}
+  .profile-card{min-height:0;}
+  .market-1x2 .outcome .pct{font-size:1.3rem;}
+  .market-tg .columns{height:110px;}
+  .market-cs .cs-body{grid-template-columns:1fr;}
+  .market-cs table.cs-matrix{font-size:0.65rem;}
+  table.htft{font-size:0.7rem;}
+  table.htft th,table.htft td{padding:0.22rem 0.1rem;}
+  .upset-hero{grid-template-columns:auto 1fr;gap:0.7rem;padding:0.8rem;}
+  .upset-hero .favmeter{display:none;}
+  .upset-hero .gauge .value{font-size:2rem;}
+  .upset-scores{grid-template-columns:repeat(2,1fr);}
+  .payoff-cards{grid-template-columns:1fr;}
+}
+@media print{
+  body{background:#fff;color:#111;max-width:none;}
+  section.m{box-shadow:none;border-color:#ccc;background:#fff;color:#111;}
+  .hero{background:#fff;color:#111;}
+  .findings .finding{background:#f6f6f6;color:#111;}
+}
+
+</style>
+</head>
+<body>
+<div class="compliance-banner" role="note"><span class="dot" aria-hidden="true"></span><span>不构成投注建议 · 仅供研究 · 大陆免责</span></div>
+<div class="hero"><h1>朗斯 vs 尼斯 模拟研究报告</h1></div>
+<section class="m m-fundamentals" aria-labelledby="m1-title"><h2 id="m1-title"><span class="ordinal">①</span>球队与赛事基本面</h2><div class="teams"><div class="team home"><div class="role">主队</div><div class="name">朗斯</div><div class="stats"><div class="stat"><span class="label">实力</span><span class="value">1780</span></div><div class="stat"><span class="label">近期场均</span><span class="value">2.05</span></div></div></div><div class="vs">对阵</div><div class="team away"><div class="role">客队</div><div class="name">尼斯</div><div class="stats"><div class="stat"><span class="label">实力</span><span class="value">1740</span></div><div class="stat"><span class="label">近期场均</span><span class="value">1.83</span></div></div></div></div><dl class="meta"><div><dt>联赛</dt><dd>法国杯</dd></div><div><dt>比赛时间（北京时间）</dt><dd>2026-05-23</dd></div><div><dt>实力差值</dt><dd>40.0</dd></div><div><dt>近期交锋主胜率</dt><dd>50.0%</dd></div></dl><div class="findings"><div class="finding tone-info"><div class="ftitle">朗斯近期状态 (赛季尾段)</div><div class="fbody"><ul class="md-list"><li><strong>联赛排名</strong>: 法甲第 6 (积分 56), 4 月稳态 4 胜 1 平 1 负, xG 主场 1.62</li><li><strong>进攻数据</strong>: 主场 22 场进 34 球 (场均 <strong>1.55</strong>), 25% 来自边路传中</li><li><strong>防守数据</strong>: 主场场均失 0.91, 高位压迫迫使对手在中后场失误 2.1/场</li><li><strong>球队气质</strong>: 13 名球员有过欧战经验, 决赛舞台经验值 1830 分钟</li></ul></div></div><div class="finding tone-info"><div class="ftitle">尼斯近期状态 (赛季尾段)</div><div class="fbody"><ul class="md-list"><li><strong>联赛排名</strong>: 法甲第 9 (积分 48), 4 月反弹 3 胜 2 平 1 负, xGA 客场 1.07</li><li><strong>客场进球</strong>: 客场场均 1.02, 50% 来自反击转化</li><li><strong>客场失球</strong>: 客场场均失 1.12, 定位球失球占 41%</li><li><strong>战意来源</strong>: 2024-25 法甲第 5 失冲欧资格, 本场为唯一欧战入场券</li></ul></div></div><div class="finding tone-info"><div class="ftitle">近 6 次交锋 (任意赛事)</div><div class="fbody"><table class="md-table"><thead><tr><th>时间</th><th>主队</th><th>客队</th><th>比分</th><th>备注</th></tr></thead><tbody><tr><td>2025-04</td><td>尼斯</td><td>朗斯</td><td>1-1</td><td>法甲第 30 轮, 朗斯 78&#x27; 扳平</td></tr><tr><td>2024-10</td><td>朗斯</td><td>尼斯</td><td>2-1</td><td>法甲第 8 轮, 朗斯主场守住</td></tr><tr><td>2024-03</td><td>尼斯</td><td>朗斯</td><td>0-2</td><td>朗斯客场强势</td></tr><tr><td>2023-09</td><td>朗斯</td><td>尼斯</td><td>0-0</td><td>闷战, 6 张黄 1 红</td></tr><tr><td>2023-04</td><td>尼斯</td><td>朗斯</td><td>3-1</td><td>尼斯主场翻盘</td></tr><tr><td>2022-11</td><td>朗斯</td><td>尼斯</td><td>1-0</td><td>71&#x27; 定位球绝杀</td></tr></tbody></table>
+<p><strong>H2H 主胜率</strong>: 50% (3/6) · 平局率: 33% · <strong>场均总进球</strong>: 2.0</p></div></div><div class="finding tone-info"><div class="ftitle">战术对位: 朗斯 4-3-3 高压 vs 尼斯 5-3-2 反击</div><div class="fbody"><ul class="md-list"><li><strong>朗斯</strong>: 防线高位站位 (后卫线距球门 38m), 双 8 号压逼中场</li><li><strong>尼斯</strong>: 三中卫 + 双翼卫回撤至 4-5-1, 等待身后球与定位球机会</li><li><strong>关键对抗</strong>: 朗斯边卫前插 vs 尼斯翼卫快攻 (转换 5 秒内完成 35%)</li><li><strong>预期形态</strong>: 朗斯控球 58-62%, 尼斯反击射门数 3-5 次, 1-2 次绝对机会</li></ul></div></div><div class="finding tone-info"><div class="ftitle">首发预测 + 阵容深度</div><div class="fbody"><p><strong>朗斯 (4-3-3, 预期首发)</strong>: Samba; Frankowski–Danso–Medina–Machado; Mendy–El Aynaoui–Fofana; Said–Wahi–Sotoca</p>
+<p><strong>尼斯 (5-3-2, 预期首发)</strong>: Bulka; Clauss–Dante–Bombito–Bard; Ndayishimiye–Boudaoui–Boga; Moffi–Cho</p>
+<ul class="md-list"><li>朗斯锋线 Wahi 当季 12 球 9 助攻, 头球 3 球</li><li>尼斯双前锋 Moffi (8 球) + Cho (6 球 4 助攻) 反击爆点</li></ul></div></div><div class="finding tone-warn"><div class="ftitle">伤停与停赛</div><div class="fbody"><ul class="md-list"><li><strong>朗斯</strong>: 中卫 Khusanov 累黄停赛, 由 Aguilar 顶上 (失球率 +12%)</li><li><strong>尼斯</strong>: 主力前腰 Laborde 大腿拉伤 (赛前 60% 出场), Vanhoutte 替补</li><li><strong>裁判</strong>: Jérôme Brisard 主吹, 本季 24 场出 89 黄 7 红, 对高位压迫吹罚偏严</li></ul></div></div><div class="finding tone-info"><div class="ftitle">动机与赛季背景</div><div class="fbody"><ul class="md-list"><li><strong>朗斯</strong>: 赛季无欧战, 本场是赛季唯一冠军机会 + 欧联资格; 球迷+球队动力满格</li><li><strong>尼斯</strong>: 联赛第 9 与欧战无缘, 本场是<strong>唯一进入欧联</strong>通道, 动机同样满格</li><li><strong>历史对比</strong>: 双方上次法国杯决赛 (2010 朗斯 vs 巴黎) 失利, 11 年再战决赛</li></ul></div></div><div class="finding tone-info"><div class="ftitle">决赛环境 / 场地</div><div class="fbody"><ul class="md-list"><li><strong>场地</strong>: Stade de France 中立场, 80,000 容量, 草皮新铺 (利好控球方)</li><li><strong>天气预报</strong>: 巴黎 2026-05-22 夜间 14°C, 西南风 8km/h, 无雨</li><li><strong>裁判风格</strong>: 主裁 Brisard 平均出牌 4.5/场, 上半场判罚偏松 → 利于尼斯反击</li><li><strong>场地侧重</strong>: 中立场削弱朗斯主场加成约 30%, λ_home 由 1.75 → 1.60</li></ul></div></div></div></section>
+<section class="m m-predictions" aria-labelledby="m2-title"><h2 id="m2-title"><span class="ordinal">②</span>模型预测与赔率分析</h2><div class="predictions-grid"><div class="card market-1x2"><h3>胜平负</h3><div class="chart"><div class="outcomes"><div class="outcome lead"><span class="crown" aria-hidden="true">★</span><div class="role">主胜</div><div class="team">朗斯</div><div class="pct">50.1%</div></div><div class="outcome "><div class="role">平局</div><div class="team">—</div><div class="pct">24.9%</div></div><div class="outcome "><div class="role">客胜</div><div class="team">尼斯</div><div class="pct">25.0%</div></div></div><div class="prop-bar" role="img" aria-label="proportional probabilities"><div class="seg home" style="width:50.11%;"></div><div class="seg draw" style="width:24.87%;"></div><div class="seg away" style="width:25.01%;"></div></div><div class="legend"><span><span class="swatch home"></span>主胜 50.1%</span><span><span class="swatch draw"></span>平局 24.9%</span><span><span class="swatch away"></span>客胜 25.0%</span></div></div></div><div class="card market-tg"><h3>总进球</h3><div class="chart"><div class="columns"><div class="col" style="height:28.4%;"><span class="pct">7.0%</span></div><div class="col" style="height:75.6%;"><span class="pct">18.8%</span></div><div class="col peak" style="height:100.0%;"><span class="pct">24.8%</span></div><div class="col" style="height:88.1%;"><span class="pct">21.9%</span></div><div class="col" style="height:58.5%;"><span class="pct">14.5%</span></div><div class="col" style="height:31.0%;"><span class="pct">7.7%</span></div><div class="col" style="height:13.8%;"><span class="pct">3.4%</span></div><div class="col" style="height:7.5%;"><span class="pct">1.9%</span></div></div><div class="labels"><span>0</span><span>1</span><span class="peak">2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7+</span></div></div><div class="summary">模型期望进球: <b>2.65</b> · ≥ 3 球概率: <b>49.4%</b> · 峰值: <b>2球</b></div></div><div class="card market-cs"><h3>比分（Top-5 高亮）</h3><div class="chart"><div class="cs-body"><div><table class="cs-matrix" role="img" aria-label="correct-score heatmap"><thead><tr><th class="axis">主\客</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody><tr><th class="axis">0</th><td class="cell draw has-value" style="background:rgba(110,167,255,0.51);">7.0%</td><td class="cell has-value" style="background:rgba(110,167,255,0.54);">7.4%</td><td class="cell has-value" style="background:rgba(110,167,255,0.28);">3.9%</td><td class="cell" style="">·</td><td class="cell" style="">·</td></tr><tr><th class="axis">1</th><td class="cell has-value" style="background:rgba(110,167,255,0.82);">11.3%</td><td class="cell draw has-value top" style="background:rgba(110,167,255,0.85);">11.8%</td><td class="cell has-value" style="background:rgba(110,167,255,0.45);">6.2%</td><td class="cell has-value" style="background:rgba(110,167,255,0.16);">2.2%</td><td class="cell" style="">·</td></tr><tr><th class="axis">2</th><td class="cell has-value" style="background:rgba(110,167,255,0.66);">9.1%</td><td class="cell has-value" style="background:rgba(110,167,255,0.69);">9.5%</td><td class="cell draw has-value" style="background:rgba(110,167,255,0.36);">5.0%</td><td class="cell has-value" style="background:rgba(110,167,255,0.13);">1.8%</td><td class="cell" style="">·</td></tr><tr><th class="axis">3</th><td class="cell has-value" style="background:rgba(110,167,255,0.34);">4.8%</td><td class="cell has-value" style="background:rgba(110,167,255,0.36);">5.0%</td><td class="cell has-value" style="background:rgba(110,167,255,0.19);">2.7%</td><td class="cell draw" style="">·</td><td class="cell" style="">·</td></tr><tr><th class="axis">4</th><td class="cell has-value" style="background:rgba(110,167,255,0.14);">1.9%</td><td class="cell has-value" style="background:rgba(110,167,255,0.14);">2.0%</td><td class="cell" style="">·</td><td class="cell" style="">·</td><td class="cell draw" style="">·</td></tr></tbody></table><div class="axis-label">客队进球 →</div></div><div class="top-list"><div class="heading">最可能比分 Top-5</div><div class="item lead"><span class="score">1-1</span><span class="pct">11.8%</span></div><div class="item"><span class="score">1-0</span><span class="pct">11.3%</span></div><div class="item"><span class="score">2-1</span><span class="pct">9.5%</span></div><div class="item"><span class="score">2-0</span><span class="pct">9.1%</span></div><div class="item"><span class="score">0-1</span><span class="pct">7.4%</span></div></div></div></div><div class="extras">5+ 进球长尾: 主队其他 3.7% · 平局其他 2.5% · 客队其他 2.1%</div></div><div class="card market-htft"><h3>半全场（半 → 全 · 含边缘）</h3><div class="chart"><table class="htft"><thead><tr><th class="axis">半 \ 全</th><th>主</th><th>平</th><th>客</th><th>Σ</th></tr></thead><tbody><tr><th class="axis">主</th><td class="cell top" style="background:rgba(110,167,255,0.49);">30.7%</td><td class="cell" style="background:rgba(110,167,255,0.08);">4.8%</td><td class="cell" style="background:rgba(110,167,255,0.06);">1.5%</td><td class="marg">37.1%</td></tr><tr><th class="axis">平</th><td class="cell" style="background:rgba(110,167,255,0.27);">16.9%</td><td class="cell" style="background:rgba(110,167,255,0.24);">15.3%</td><td class="cell" style="background:rgba(110,167,255,0.15);">9.5%</td><td class="marg">41.7%</td></tr><tr><th class="axis">客</th><td class="cell" style="background:rgba(110,167,255,0.06);">2.6%</td><td class="cell" style="background:rgba(110,167,255,0.08);">4.7%</td><td class="cell" style="background:rgba(110,167,255,0.22);">13.9%</td><td class="marg">21.3%</td></tr></tbody><tfoot><tr><th>Σ</th><td class="marg">50.3%</td><td class="marg">24.9%</td><td class="marg">24.9%</td><td class="marg">100.0%</td></tr></tfoot></table></div><div class="legend"><span>峰值: <b>主 → 主</b> · 30.7%</span><span>列/行 Σ = 边缘概率</span></div></div></div><div class="callout">最可能胜平负: <strong>主胜（朗斯）</strong> · 50.1% · 最可能比分: <strong>1-1</strong> · 11.8% · 最可能进球数: <strong>2球</strong> · 24.8%</div><div class="findings"><div class="finding tone-info"><div class="ftitle">Track A Poisson MC — 模型信号</div><div class="fbody"><ul class="md-list"><li>λ_home = <strong>1.60</strong> (中立场调整后), λ_away = <strong>1.05</strong>, 样本数 = 200,000</li><li>1x2: 主胜 <strong>50.11%</strong>, 平 <strong>24.87%</strong>, 客 <strong>25.01%</strong></li><li>期望总进球 = 2.65; 最可能比分: <strong>1-1</strong> (11.77%)</li><li>半全场 HH = 30.74% (主胜主导剧本最高频)</li></ul></div></div><div class="finding tone-info"><div class="ftitle">模型校准证据</div><div class="fbody"><ul class="md-list"><li>λ 来源: 朗斯主场赛季均 1.55 进 / 0.91 失 → 中立场 ×0.9 + 杯赛专注 ×1.05 ≈ 1.60</li><li>尼斯客场均 1.02 进 → 中立场 ×1.0 + 决赛动机 ×1.03 ≈ 1.05</li><li>模型主胜 50.1% vs 法甲基线 46% → 偏离 +4.1pp, 受决赛中立场约束</li><li>与博彩公允主胜 ~50% 相符, 校准误差 ≤ 1pp</li></ul></div></div><div class="finding tone-info"><div class="ftitle">公平价格 vs 中国体彩 — 1x2 对照</div><div class="fbody"><p><strong>1x2 margin</strong>: 12.68% (净抽水 11.25%)<br><strong>devigged</strong>: 主 50.14% / 平 24.86% / 客 25.00%</p>
+<table class="md-table"><thead><tr><th>选项</th><th>公平 1/p</th><th>体彩报价</th><th>体彩 implied</th><th>偏离</th></tr></thead><tbody><tr><td>主胜</td><td>1.99</td><td>1.77</td><td>56.50%</td><td>-11.3%</td></tr><tr><td>平</td><td>4.02</td><td>3.57</td><td>28.01%</td><td>-11.3%</td></tr><tr><td>客胜</td><td>4.00</td><td>3.55</td><td>28.17%</td><td>-11.3%</td></tr></tbody></table>
+<p>*偏离 = 体彩报价 vs 公平价的相对涨幅, 反映 margin 在各 outcome 上的分摊;  client-balanced 时几乎相等, 反之提示庄家在风险敞口侧</p></div></div><div class="finding tone-info"><div class="ftitle">正 edge 候选 (model − implied)</div><div class="fbody"><p>本场 4 市场全部 outcome 的 model_prob <strong>都不高于</strong>体彩 implied — 在抽水 12-14% 的零售市场上属常态。<strong>没有正 prob_edge 候选</strong>, 说明体彩报价已对 Track A 模型完全消化, 任何下注都依靠Track B 复杂系统/8 因子的额外证据而非赔率错配。</p></div></div><div class="finding tone-info"><div class="ftitle">庄家盈利视角 (排除抽水后的真信号)</div><div class="fbody"><ul class="md-list"><li><strong>抽水分布</strong>: 1x2 = 12.68% (净 11.25%), total_goals = 12.95%, correct_score = 14.31%, ht_ft = 12.95%</li><li><strong>公众热度</strong>: 朗斯主场 + 法国杯 → 资金压主胜, 主胜赔率被压紧 → 主胜 prob_edge 偏负</li><li><strong>决赛风险敞口</strong>: 庄家最怕 90 分钟平 + 点球; 平 / 客 两端相对公平较易被相对低估</li><li><strong>历史频率参照</strong>: 法国杯近 10 年决赛 90 分钟平 ≈ 40%, 客胜场次 2 次</li></ul></div></div></div></section>
+<section class="m m-upset" aria-labelledby="m3-title"><h2 id="m3-title"><span class="ordinal">③</span>爆冷可能性分析</h2><div class="upset-hero band-mid"><div class="gauge"><span class="value">49.9%</span><span class="caption">爆冷概率</span></div><div class="narrative"><p>模型把 <strong>朗斯</strong> 视为<strong>中等热门</strong>（P=50.1%）。爆冷意味着 客队拿分（平局 24.9% + 客胜 25.0%） 概率 49.9%。</p><div class="meta"><span class="chip band">中等热门</span><span class="fav">朗斯 · 热门概率 50.1%</span></div></div><div class="favmeter" aria-hidden="true"><div class="track"><div class="fill" style="height:50.1%;"></div></div><span class="meter-cap">favourite</span></div></div><div class="upset-scores-wrap"><div class="upset-scores-head"><h4>潜在爆冷比分</h4><p class="hint">以下为 <strong>尼斯</strong> 不输（拿分）的 Top-4 比分，合计 32.5%，占整体爆冷可能性 (49.9%) 的主要质量。</p></div><div class="upset-scores"><div class="upset-score-card top"><div class="head"><span class="score">1-1</span><span class="pct">11.8%</span></div><div class="interp result-draw">平局</div><div class="meter" aria-hidden="true"><div class="fill" style="width:100.0%;"></div></div></div><div class="upset-score-card"><div class="head"><span class="score">0-1</span><span class="pct">7.4%</span></div><div class="interp result-away">客胜 · 尼斯</div><div class="meter" aria-hidden="true"><div class="fill" style="width:63.0%;"></div></div></div><div class="upset-score-card"><div class="head"><span class="score">0-0</span><span class="pct">7.0%</span></div><div class="interp result-draw">平局</div><div class="meter" aria-hidden="true"><div class="fill" style="width:59.9%;"></div></div></div><div class="upset-score-card"><div class="head"><span class="score">1-2</span><span class="pct">6.2%</span></div><div class="interp result-away">客胜 · 尼斯</div><div class="meter" aria-hidden="true"><div class="fill" style="width:52.8%;"></div></div></div></div></div><div class="findings"><div class="finding tone-warn"><div class="ftitle">Track A — 8 因子启发上调</div><div class="fbody"><p>基础: 主 50.14% / 平 24.86% / 客 25.00%<br>调整: 主 <strong>26.14%</strong> / 平 <strong>36.36%</strong> / 客 <strong>37.50%</strong><br>冷门 1X2 合计 = <strong>73.86%</strong>, total_boost = +26.00%</p>
+<table class="md-table"><thead><tr><th>因子</th><th>权重</th><th>解读</th></tr></thead><tbody><tr><td>决赛单场淘汰制放大偶然性</td><td>+6%</td><td>法国杯近10年决赛: 3 场平局+点球, 2 场客胜</td></tr><tr><td>尼斯反击克制朗斯高压</td><td>+4%</td><td>决赛中高压 vs 反击成功率: 42%/38%/20%(平)</td></tr><tr><td>热门方决赛心理压力</td><td>+3%</td><td>热门方决赛非预期失误率 +15% vs 常规赛</td></tr><tr><td>尼斯杯赛底蕴</td><td>+2%</td><td>Nice 近 5 年决赛/半决赛 1胜1负2平</td></tr><tr><td>决赛 90 分钟平局高发</td><td>+4%</td><td>法国杯近10年决赛 90 分钟平局率 ≈ 40%</td></tr><tr><td>赔率被市场情绪扭曲</td><td>+3%</td><td>公众押主胜 → 客胜公平 ~4.0, 实际 ~4.5</td></tr><tr><td>下半场高进球方差</td><td>+2%</td><td>决赛 60&#x27; 后进球率约为前 60&#x27; 的 1.8 倍</td></tr><tr><td>双方实力极度接近</td><td>+2%</td><td>ELO 差 40, 弱队不败率历史 62%</td></tr></tbody></table></div></div><div class="finding tone-info"><div class="ftitle">Track B — Bootstrap null-test (与法甲基线对比)</div><div class="fbody"><ul class="md-list"><li>法甲历年主胜均值 ≈ <strong>46%</strong></li><li>本场 empirical 主胜 = <strong>50.11%</strong> (MC + 决赛中立场调整)</li><li>z = <strong>+0.64</strong>, p = <strong>0.2614</strong> (单侧, n_prior = 60 杯赛样本)</li><li>结论: <strong>与基线无显著差异</strong> — 主胜信号脆弱, 需复杂系统补强</li></ul></div></div><div class="finding tone-warn"><div class="ftitle">Track B — Heavy-tail Poisson 客胜尾部</div><div class="fbody"><ul class="md-list"><li>解析 P(客胜) = <strong>24.91%</strong> (独立 Poisson, λ_h=1.60/λ_a=1.05)</li><li>杯赛尾部因子 ×1.2 → <strong>重尾客胜 29.89%</strong></li><li>解析 P(平局) = 24.95%</li><li>突发因素(红牌/VAR)冲击概率: 6%</li><li>max_upset_1x2 (Track B 极端剧本): home=45.16%, draw=24.95%, away=29.89%</li></ul></div></div><div class="finding tone-warn"><div class="ftitle">Track B — 混沌敏感性 (λ_h-δ, λ_a+δ)</div><div class="fbody"><p>模拟「朗斯失常 + 尼斯爆发」情景, 看主胜被吞噬的速度。</p>
+<table class="md-table"><thead><tr><th>δ</th><th>λ_h</th><th>λ_a</th><th>p_home</th><th>p_draw</th><th>p_away</th></tr></thead><tbody><tr><td>0.10</td><td>1.50</td><td>1.15</td><td>45.32%</td><td>25.60%</td><td>29.08%</td></tr><tr><td>0.15</td><td>1.45</td><td>1.20</td><td>42.56%</td><td>26.00%</td><td>31.44%</td></tr><tr><td>0.20</td><td>1.40</td><td>1.25</td><td>40.29%</td><td>26.01%</td><td>33.70%</td></tr><tr><td>0.25</td><td>1.35</td><td>1.30</td><td>37.97%</td><td>26.18%</td><td>35.85%</td></tr></tbody></table>
+<p><strong>结论</strong>: δ=0.25 时主胜跌至 37.97%, 客胜升至 35.85% — 主胜信号对 λ 漂移的脆弱性较高 (杯赛决赛常见情形)</p></div></div><div class="finding tone-info"><div class="ftitle">Track B — ELO 实力聚类</div><div class="fbody"><ul class="md-list"><li>朗斯 ELO 1780 + 主场加成 50 = 1830</li><li>尼斯 ELO 1740</li><li>effective_gap = <strong>90</strong> → 杯赛决赛<strong>风险等级 <code>high</code></strong></li><li>决赛门槛比联赛低 (杯赛方差大), 90 在杯赛属于可被冲击范围</li></ul></div></div><div class="finding tone-warn"><div class="ftitle">Track B — 复杂网络爆冷概率 + 剧本扫描</div><div class="fbody"><ul class="md-list"><li>form_score = <strong>0.185</strong> (主场基线 + 实力差 + 公平主胜 − 抽水噪音 − 杯赛方差)</li><li><strong>upset_prob = 45.00%</strong></li></ul>
+<p><strong>剧本扫描</strong>:<br>- <strong>尼斯反击破门 + 低位锁防</strong> (p=10%): 朗斯高位压迫被身后球穿透 → 客胜赔率从 4.50 可压至 2.30+<br>- <strong>1-1 / 0-0 闷战 → 加时 → 点球</strong> (p=18%): 杯赛决赛双方谨慎 + 90 分钟均势 → 平局是庄家利润蓄水池, 概率被低估<br>- <strong>红牌/VAR swing</strong> (p=5%): 朗斯关键球员吃牌 → 尼斯反扑 → 客胜瞬间从 ~25% 跳到 ~40%</p></div></div><div class="finding tone-info"><div class="ftitle">Track A × Track B 融合 1x2</div><div class="fbody"><p>融合权重 80%(A) / 20%(B)</p>
+<table class="md-table"><thead><tr><th>选项</th><th>Track A</th><th>Track B (max_upset)</th><th>融合</th><th>Δ vs A</th></tr></thead><tbody><tr><td>主胜</td><td>50.11%</td><td>45.16%</td><td><strong>47.61%</strong></td><td>-2.51pp</td></tr><tr><td>平</td><td>24.87%</td><td>24.95%</td><td><strong>24.89%</strong></td><td>+0.02pp</td></tr><tr><td>客胜</td><td>25.01%</td><td>29.89%</td><td><strong>27.50%</strong></td><td>+2.49pp</td></tr></tbody></table></div></div></div></section>
+<section class="m m-strategy" aria-labelledby="m4-title"><h2 id="m4-title"><span class="ordinal">④</span>模拟投注策略</h2><div class="profiles-grid"><div class="profile-card p-conservative"><div class="head"><span class="icon" aria-hidden="true">🛡️</span><span class="name">稳健型</span><span class="risk">低风险</span></div><div class="picks"><div class="pick"><span class="lhs"><span class="mkt">胜平负</span>主胜（朗斯）</span><span class="pick-meta"><span class="pp">50.1%</span><span class="pp-odds">1.77</span><span class="pp-stake">¥38</span></span></div><div class="pick"><span class="lhs"><span class="mkt">半全场</span>主/主</span><span class="pick-meta"><span class="pp">30.7%</span><span class="pp-odds">2.88</span><span class="pp-stake">¥24</span></span></div><div class="pick"><span class="lhs"><span class="mkt">胜平负</span>客胜（尼斯）</span><span class="pick-meta"><span class="pp">25.0%</span><span class="pp-odds">3.55</span><span class="pp-stake">¥20</span></span></div><div class="pick"><span class="lhs"><span class="mkt">总进球</span>2球</span><span class="pick-meta"><span class="pp">24.8%</span><span class="pp-odds">3.57</span><span class="pp-stake">¥18</span></span></div></div><div class="stake">模拟下注: <b>¥100</b> · 共 4 注<span class="stake-sub"> (本金 ¥100)</span></div></div><div class="profile-card p-aggressive"><div class="head"><span class="icon" aria-hidden="true">🔥</span><span class="name">激进型</span><span class="risk">高敞口</span></div><div class="picks"><div class="pick"><span class="lhs"><span class="mkt">胜平负</span>主胜（朗斯）</span><span class="pick-meta"><span class="pp">50.1%</span><span class="pp-odds">1.77</span><span class="pp-stake">¥30</span></span></div><div class="pick"><span class="lhs"><span class="mkt">半全场</span>主/主</span><span class="pick-meta"><span class="pp">30.7%</span><span class="pp-odds">2.88</span><span class="pp-stake">¥24</span></span></div><div class="pick"><span class="lhs"><span class="mkt">总进球</span>2球</span><span class="pick-meta"><span class="pp">24.8%</span><span class="pp-odds">3.57</span><span class="pp-stake">¥24</span></span></div><div class="pick"><span class="lhs"><span class="mkt">总进球</span>3球</span><span class="pick-meta"><span class="pp">21.9%</span><span class="pp-odds">4.05</span><span class="pp-stake">¥22</span></span></div></div><div class="stake">模拟下注: <b>¥100</b> · 共 4 注<span class="stake-sub"> (本金 ¥100)</span></div></div><div class="profile-card p-hunter"><div class="head"><span class="icon" aria-hidden="true">🎯</span><span class="name">猎手型</span><span class="risk">价差驱动</span></div><div class="picks"><div class="pick"><span class="lhs"><span class="mkt">比分</span>1-1</span><span class="pick-meta"><span class="pp">11.8%</span><span class="pp-odds">7.45</span><span class="pp-stake">¥24</span></span></div><div class="pick"><span class="lhs"><span class="mkt">半全场</span>客/客</span><span class="pick-meta"><span class="pp">13.9%</span><span class="pp-odds">6.36</span><span class="pp-stake">¥24</span></span></div><div class="pick"><span class="lhs"><span class="mkt">总进球</span>0球</span><span class="pick-meta"><span class="pp">7.0%</span><span class="pp-odds">12.55</span><span class="pp-stake">¥26</span></span></div><div class="pick"><span class="lhs"><span class="mkt">胜平负</span>平局</span><span class="pick-meta"><span class="pp">24.9%</span><span class="pp-odds">3.57</span><span class="pp-stake">¥26</span></span></div></div><div class="stake">模拟下注: <b>¥100</b> · 共 4 注<span class="stake-sub"> (本金 ¥100)</span></div></div><div class="profile-card p-upset"><div class="head"><span class="icon" aria-hidden="true">🎲</span><span class="name">爆冷型</span><span class="risk">高方差</span></div><div class="picks"><div class="pick"><span class="lhs"><span class="mkt">胜平负</span>客胜（尼斯）</span><span class="pick-meta"><span class="pp">25.0%</span><span class="pp-odds">3.55</span><span class="pp-stake">¥32</span></span></div><div class="pick"><span class="lhs"><span class="mkt">比分</span>0-2</span><span class="pick-meta"><span class="pp">3.9%</span><span class="pp-odds">22.37</span><span class="pp-stake">¥28</span></span></div><div class="pick"><span class="lhs"><span class="mkt">半全场</span>主/客</span><span class="pick-meta"><span class="pp">1.5%</span><span class="pp-odds">59.47</span><span class="pp-stake">¥26</span></span></div><div class="pick"><span class="lhs"><span class="mkt">总进球</span>0球</span><span class="pick-meta"><span class="pp">7.0%</span><span class="pp-odds">12.55</span><span class="pp-stake">¥14</span></span></div></div><div class="stake">模拟下注: <b>¥100</b> · 共 4 注<span class="stake-sub"> (本金 ¥100)</span></div></div></div><div class="payoff-block"><h3 class="strategy-exec-heading">假设命中收益（按 体彩 单注 ¥2 起投）</h3><p class="note">下面假设比赛按以下结果落定。每个画像都按 <b>¥100 全压</b>方案配置（共 ¥400 敞口）；下注金额均为 <b>¥2 的倍数</b>。<b>固定赔率</b>下，命中净收益 = 下注 × (赔率 − 1)。</p><div class="payoff-hero"><div class="scenario"><span class="label">假设比赛结果</span><span class="score">1-0</span><span class="prob">模型 P = 11.3%</span></div><div class="scenario-meta"><div class="row"><span class="k">胜平负</span><span class="v">主胜（朗斯）</span></div><div class="row"><span class="k">总进球</span><span class="v">1球</span></div><div class="row"><span class="k">比分</span><span class="v">1-0</span></div></div><div class="bankroll"><span class="label">单注基数</span><span class="value">¥2</span><small>体彩 单场竞猜规则</small></div></div><div class="payoff-cards"><div class="payoff-card p-conservative"><div class="head"><span class="name"><span class="icon" aria-hidden="true">🛡️</span>稳健型</span><span class="stake">50 注 · 投入 ¥100 · 2/4 命中</span></div><div class="profit gain">+¥36.38<small>净收益</small></div><div class="breakdown"><div class="pick-row"><span class="check hit" aria-hidden="true">✓</span><span class="pick-label"><span class="mkt">胜平负</span>主胜（朗斯）</span><span class="stake-val">19 注 · ¥38 1.77</span><span class="delta gain">+¥29.26</span></div><div class="pick-row"><span class="check hit" aria-hidden="true">✓</span><span class="pick-label"><span class="mkt">半全场</span>主/主</span><span class="stake-val">12 注 · ¥24 2.88</span><span class="delta gain">+¥45.12</span></div><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">胜平负</span>客胜（尼斯）</span><span class="stake-val">10 注 · ¥20 3.55</span><span class="delta loss">−¥20.00</span></div><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">总进球</span>2球</span><span class="stake-val">9 注 · ¥18 3.57</span><span class="delta loss">−¥18.00</span></div></div><div class="wallet"><span>下注 ¥100</span><span>钱包变化 <b>+¥36.38</b></span></div></div><div class="payoff-card p-aggressive"><div class="head"><span class="name"><span class="icon" aria-hidden="true">🔥</span>激进型</span><span class="stake">50 注 · 投入 ¥100 · 2/4 命中</span></div><div class="profit gain">+¥22.22<small>净收益</small></div><div class="breakdown"><div class="pick-row"><span class="check hit" aria-hidden="true">✓</span><span class="pick-label"><span class="mkt">胜平负</span>主胜（朗斯）</span><span class="stake-val">15 注 · ¥30 1.77</span><span class="delta gain">+¥23.10</span></div><div class="pick-row"><span class="check hit" aria-hidden="true">✓</span><span class="pick-label"><span class="mkt">半全场</span>主/主</span><span class="stake-val">12 注 · ¥24 2.88</span><span class="delta gain">+¥45.12</span></div><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">总进球</span>2球</span><span class="stake-val">12 注 · ¥24 3.57</span><span class="delta loss">−¥24.00</span></div><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">总进球</span>3球</span><span class="stake-val">11 注 · ¥22 4.05</span><span class="delta loss">−¥22.00</span></div></div><div class="wallet"><span>下注 ¥100</span><span>钱包变化 <b>+¥22.22</b></span></div></div><div class="payoff-card p-hunter"><div class="head"><span class="name"><span class="icon" aria-hidden="true">🎯</span>猎手型</span><span class="stake">50 注 · 投入 ¥100 · 0/4 命中</span></div><div class="profit loss">−¥100.00<small>净收益</small></div><div class="breakdown"><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">比分</span>1-1</span><span class="stake-val">12 注 · ¥24 7.45</span><span class="delta loss">−¥24.00</span></div><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">半全场</span>客/客</span><span class="stake-val">12 注 · ¥24 6.36</span><span class="delta loss">−¥24.00</span></div><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">总进球</span>0球</span><span class="stake-val">13 注 · ¥26 12.55</span><span class="delta loss">−¥26.00</span></div><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">胜平负</span>平局</span><span class="stake-val">13 注 · ¥26 3.57</span><span class="delta loss">−¥26.00</span></div></div><div class="wallet"><span>下注 ¥100</span><span>钱包变化 <b>−¥100.00</b></span></div></div><div class="payoff-card p-upset"><div class="head"><span class="name"><span class="icon" aria-hidden="true">🎲</span>爆冷型</span><span class="stake">50 注 · 投入 ¥100 · 0/4 命中</span></div><div class="profit loss">−¥100.00<small>净收益</small></div><div class="breakdown"><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">胜平负</span>客胜（尼斯）</span><span class="stake-val">16 注 · ¥32 3.55</span><span class="delta loss">−¥32.00</span></div><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">比分</span>0-2</span><span class="stake-val">14 注 · ¥28 22.37</span><span class="delta loss">−¥28.00</span></div><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">半全场</span>主/客</span><span class="stake-val">13 注 · ¥26 59.47</span><span class="delta loss">−¥26.00</span></div><div class="pick-row"><span class="check miss" aria-hidden="true">✗</span><span class="pick-label"><span class="mkt">总进球</span>0球</span><span class="stake-val">7 注 · ¥14 12.55</span><span class="delta loss">−¥14.00</span></div></div><div class="wallet"><span>下注 ¥100</span><span>钱包变化 <b>−¥100.00</b></span></div></div></div></div></section>
+<footer class="page"><div class="compliance">不构成投注建议 · 仅供研究 · 大陆免责</div></footer>
+</body></html>

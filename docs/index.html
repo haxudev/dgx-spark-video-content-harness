@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dgx-spark-video-content-harness · 项目报告书</title>
+  <meta name="description" content="DGX Spark (Qwen3.6) 驱动的足球数据观察短视频自动生产线 · 项目报告书" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css" />
+  <style>
+    :root {
+      --bg: #0d1117;
+      --bg-soft: #161b22;
+      --bg-elev: #1c2230;
+      --border: #262c36;
+      --fg: #e6edf3;
+      --fg-muted: #9aa5b1;
+      --accent: #4f9dff;
+      --accent-soft: #1f6feb33;
+      --sidebar-w: 300px;
+      --header-h: 60px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    header.topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: var(--header-h);
+      display: flex; align-items: center; gap: 14px;
+      padding: 0 20px; background: var(--bg-soft);
+      border-bottom: 1px solid var(--border); z-index: 30;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; }
+    .brand .logo {
+      width: 28px; height: 28px; border-radius: 7px; flex: 0 0 auto;
+      background: linear-gradient(135deg, #4f9dff, #a371f7);
+      display: grid; place-items: center; font-size: 15px;
+    }
+    .brand small { color: var(--fg-muted); font-weight: 500; }
+    .topbar .spacer { flex: 1; }
+    .topbar a.gh {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border: 1px solid var(--border); border-radius: 8px;
+      color: var(--fg); font-size: 13px; background: var(--bg-elev);
+    }
+    .topbar a.gh:hover { border-color: var(--accent); text-decoration: none; }
+    .menu-toggle {
+      display: none; background: none; border: 1px solid var(--border);
+      color: var(--fg); border-radius: 8px; padding: 6px 10px; cursor: pointer;
+    }
+
+    nav.sidebar {
+      position: fixed; top: var(--header-h); bottom: 0; left: 0; width: var(--sidebar-w);
+      overflow-y: auto; padding: 20px 14px; background: var(--bg-soft);
+      border-right: 1px solid var(--border); z-index: 20;
+    }
+    nav .group-title {
+      font-size: 12px; text-transform: uppercase; letter-spacing: .08em;
+      color: var(--fg-muted); padding: 6px 12px; margin-top: 4px;
+    }
+    nav a.item {
+      display: block; padding: 10px 12px; border-radius: 8px; margin: 2px 0;
+      color: var(--fg); font-size: 14px; border: 1px solid transparent;
+    }
+    nav a.item:hover { background: var(--bg-elev); text-decoration: none; }
+    nav a.item.active {
+      background: var(--accent-soft); border-color: var(--accent);
+      color: #fff; font-weight: 600;
+    }
+    nav a.item .idx { color: var(--accent); font-weight: 700; margin-right: 8px; }
+    nav .toc { margin: 6px 0 14px 6px; padding-left: 8px; border-left: 1px solid var(--border); }
+    nav .toc a { display: block; color: var(--fg-muted); font-size: 12.5px; padding: 3px 8px; }
+    nav .toc a:hover { color: var(--accent); text-decoration: none; }
+    nav .toc a.h3 { padding-left: 20px; font-size: 12px; }
+
+    main {
+      margin-left: var(--sidebar-w); padding: calc(var(--header-h) + 24px) 48px 96px;
+      max-width: 980px;
+    }
+    .backdrop { display: none; }
+
+    /* Markdown content */
+    .md h1 { font-size: 30px; line-height: 1.3; margin: 8px 0 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+    .md h2 { font-size: 23px; margin: 40px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    .md h3 { font-size: 18.5px; margin: 28px 0 10px; }
+    .md h4 { font-size: 16px; margin: 22px 0 8px; color: var(--fg); }
+    .md p, .md li { font-size: 15.5px; }
+    .md ul, .md ol { padding-left: 24px; }
+    .md li { margin: 4px 0; }
+    .md blockquote {
+      margin: 16px 0; padding: 2px 16px; color: var(--fg-muted);
+      border-left: 3px solid var(--accent); background: var(--bg-soft); border-radius: 0 8px 8px 0;
+    }
+    .md code {
+      background: var(--bg-elev); padding: 2px 6px; border-radius: 5px;
+      font-family: "SFMono-Regular", "JetBrains Mono", Consolas, monospace; font-size: 13px;
+    }
+    .md pre {
+      background: #0b1020; border: 1px solid var(--border); border-radius: 10px;
+      padding: 16px; overflow-x: auto; margin: 16px 0;
+    }
+    .md pre code { background: none; padding: 0; font-size: 13px; line-height: 1.6; }
+    .md table {
+      border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 14px;
+      display: block; overflow-x: auto;
+    }
+    .md th, .md td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
+    .md th { background: var(--bg-elev); font-weight: 600; }
+    .md tr:nth-child(even) td { background: var(--bg-soft); }
+    .md img { max-width: 100%; border-radius: 8px; }
+    .md hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+    .md a { border-bottom: 1px dotted var(--accent); }
+
+    .pager { display: flex; justify-content: space-between; margin-top: 48px; gap: 16px; }
+    .pager a {
+      flex: 1; padding: 14px 18px; border: 1px solid var(--border); border-radius: 10px;
+      background: var(--bg-soft); font-size: 14px;
+    }
+    .pager a:hover { border-color: var(--accent); text-decoration: none; }
+    .pager a.next { text-align: right; }
+    .pager .lbl { display: block; font-size: 12px; color: var(--fg-muted); margin-bottom: 4px; }
+    .loading { color: var(--fg-muted); padding: 40px 0; }
+
+    @media (max-width: 900px) {
+      .menu-toggle { display: inline-block; }
+      nav.sidebar { transform: translateX(-100%); transition: transform .2s ease; box-shadow: 0 0 40px #0008; }
+      body.nav-open nav.sidebar { transform: translateX(0); }
+      body.nav-open .backdrop { display: block; position: fixed; inset: var(--header-h) 0 0 0; background: #0008; z-index: 15; }
+      main { margin-left: 0; padding: calc(var(--header-h) + 20px) 20px 80px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <button class="menu-toggle" id="menuToggle" aria-label="菜单">☰</button>
+    <div class="brand">
+      <span class="logo">⚽</span>
+      <span>dgx-spark-video-content-harness<br /><small>项目报告书 · DGX Spark (Qwen3.6) 短视频生产线</small></span>
+    </div>
+    <div class="spacer"></div>
+    <a class="gh" href="https://github.com/haxudev/dgx-spark-video-content-harness" target="_blank" rel="noopener">GitHub ↗</a>
+  </header>
+
+  <nav class="sidebar" id="sidebar">
+    <div class="group-title">项目报告书</div>
+    <div id="navList"></div>
+  </nav>
+  <div class="backdrop" id="backdrop"></div>
+
+  <main>
+    <article class="md" id="content"><p class="loading">加载中…</p></article>
+    <div class="pager" id="pager"></div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+  <script>
+    const REPORTS = [
+      { id: "01", title: "名称 · 目标 · 背景", file: "reports/01-name-goal-background.md" },
+      { id: "02", title: "作品介绍：功能与亮点", file: "reports/02-features-highlights.md" },
+      { id: "03", title: "DGX Spark Qwen3.6 使用详情", file: "reports/03-dgx-spark-qwen36.md" },
+    ];
+
+    const navList = document.getElementById("navList");
+    const content = document.getElementById("content");
+    const pager = document.getElementById("pager");
+    const body = document.body;
+    const cache = {};
+
+    if (window.marked) {
+      marked.setOptions({ gfm: true, breaks: false });
+    }
+
+    function slugify(text) {
+      return text.trim().toLowerCase()
+        .replace(/[^\w\u4e00-\u9fa5]+/g, "-").replace(/^-+|-+$/g, "");
+    }
+
+    function renderNav(activeId) {
+      navList.innerHTML = "";
+      REPORTS.forEach((r, i) => {
+        const a = document.createElement("a");
+        a.className = "item" + (r.id === activeId ? " active" : "");
+        a.href = "#/" + r.id;
+        a.innerHTML = '<span class="idx">' + String(i + 1).padStart(2, "0") + "</span>" + r.title;
+        navList.appendChild(a);
+        if (r.id === activeId) {
+          const toc = document.createElement("div");
+          toc.className = "toc";
+          toc.id = "toc-" + r.id;
+          navList.appendChild(toc);
+        }
+      });
+    }
+
+    function buildToc(reportId) {
+      const toc = document.getElementById("toc-" + reportId);
+      if (!toc) return;
+      toc.innerHTML = "";
+      content.querySelectorAll("h2, h3").forEach((h) => {
+        if (!h.id) h.id = slugify(h.textContent);
+        const a = document.createElement("a");
+        a.href = "#/" + reportId + "#" + h.id;
+        a.textContent = h.textContent;
+        if (h.tagName === "H3") a.className = "h3";
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          document.getElementById(h.id).scrollIntoView({ behavior: "smooth", block: "start" });
+          history.replaceState(null, "", "#/" + reportId);
+          closeNav();
+        });
+        toc.appendChild(a);
+      });
+    }
+
+    function renderPager(idx) {
+      pager.innerHTML = "";
+      const prev = REPORTS[idx - 1];
+      const next = REPORTS[idx + 1];
+      if (prev) {
+        pager.insertAdjacentHTML("beforeend",
+          '<a class="prev" href="#/' + prev.id + '"><span class="lbl">← 上一篇</span>' + prev.title + "</a>");
+      } else { pager.insertAdjacentHTML("beforeend", "<span></span>"); }
+      if (next) {
+        pager.insertAdjacentHTML("beforeend",
+          '<a class="next" href="#/' + next.id + '"><span class="lbl">下一篇 →</span>' + next.title + "</a>");
+      } else { pager.insertAdjacentHTML("beforeend", "<span></span>"); }
+    }
+
+    async function load(reportId) {
+      const idx = REPORTS.findIndex((r) => r.id === reportId);
+      const report = REPORTS[idx];
+      if (!report) { location.hash = "#/" + REPORTS[0].id; return; }
+      renderNav(report.id);
+      content.innerHTML = '<p class="loading">加载中…</p>';
+      try {
+        let md = cache[report.file];
+        if (md === undefined) {
+          const res = await fetch(report.file);
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          md = await res.text();
+          cache[report.file] = md;
+        }
+        content.innerHTML = marked.parse(md);
+        if (window.hljs) {
+          content.querySelectorAll("pre code").forEach((el) => { try { hljs.highlightElement(el); } catch (e) {} });
+        }
+        buildToc(report.id);
+        renderPager(idx);
+        window.scrollTo({ top: 0 });
+        document.title = report.title + " · dgx-spark-video-content-harness";
+      } catch (err) {
+        content.innerHTML = '<p class="loading">加载失败：' + err.message +
+          '。请通过 GitHub Pages 访问本页面（本地直接打开 file:// 无法 fetch）。</p>';
+      }
+    }
+
+    function route() {
+      const m = (location.hash || "").match(/^#\/(\d+)/);
+      const id = m ? m[1] : REPORTS[0].id;
+      load(id);
+      closeNav();
+    }
+
+    function closeNav() { body.classList.remove("nav-open"); }
+    document.getElementById("menuToggle").addEventListener("click", () => body.classList.toggle("nav-open"));
+    document.getElementById("backdrop").addEventListener("click", closeNav);
+    window.addEventListener("hashchange", route);
+    route();
+  </script>
+</body>
+</html>

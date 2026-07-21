@@ -1,0 +1,19 @@
+<div class="table-row-focus">
+  <div class="scene-title">{{title}}</div>
+  {{#each data.tables}}
+    <table>
+      <thead>
+        <tr>{{#each headers}}<th>{{this}}</th>{{/each}}</tr>
+      </thead>
+      <tbody>
+        {{#each rows}}
+          <tr {{#if @first}}class="highlight"{{/if}}>
+            {{#each this}}
+              <td class="{{toneClass tone}}">{{trim text 30}}</td>
+            {{/each}}
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  {{/each}}
+</div>

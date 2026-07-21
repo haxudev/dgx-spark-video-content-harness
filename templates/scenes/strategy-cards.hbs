@@ -1,0 +1,17 @@
+<div>
+  <div class="scene-title">{{title}}</div>
+  <div style="overflow:hidden;max-height:1100px">
+  {{#each data.strategies}}
+    <div class="strat-card">
+      <h3>{{name}}</h3>
+      <div class="meta">{{trim goal 60}}</div>
+      <div class="alloc">
+        {{#each allocations}}
+          <div>· {{market}} {{option}}{{#if amount}} · ¥{{amount}}{{/if}}</div>
+        {{/each}}
+      </div>
+      {{#if total}}<div class="meta" style="margin-top:12px">合计 ¥{{total.amount}} / {{total.units}}注</div>{{/if}}
+    </div>
+  {{/each}}
+  </div>
+</div>

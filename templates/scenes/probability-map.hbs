@@ -1,0 +1,21 @@
+<div>
+  <div class="scene-title">{{title}}</div>
+  {{#each data.barLists}}
+    <div class="heat-grid">
+      {{#each items}}
+        <div class="heat-cell" style="background:rgba(125,211,252,{{probability}})">
+          <div class="heat-label">{{trim label 8}}</div>
+          <div class="heat-pct">{{pctFrac probability}}</div>
+        </div>
+      {{/each}}
+    </div>
+  {{/each}}
+</div>
+<style>
+  .heat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px;}
+  .heat-cell{aspect-ratio:1/1;border:1px solid var(--line);border-radius:14px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    color:#fff;text-shadow:0 2px 8px #00000088;}
+  .heat-label{font-size:22px;color:#e7edf6;margin-bottom:4px;}
+  .heat-pct{font-size:32px;font-weight:700;font-variant-numeric:tabular-nums;}
+</style>

@@ -1,0 +1,21 @@
+<div>
+  <div class="scene-title">{{title}}</div>
+  {{#each data.tables}}
+    {{#if (gt rows.length 0)}}
+      <div class="compare">
+        <div>
+          <div class="h">{{lookup headers 1}}</div>
+          {{#each rows}}
+            <div class="row"><span>{{lookup this 0.text}}</span><span>{{lookup this 1.text}}</span></div>
+          {{/each}}
+        </div>
+        <div>
+          <div class="h">{{lookup headers 2}}</div>
+          {{#each rows}}
+            <div class="row"><span>{{lookup this 0.text}}</span><span>{{lookup this 2.text}}</span></div>
+          {{/each}}
+        </div>
+      </div>
+    {{/if}}
+  {{/each}}
+</div>

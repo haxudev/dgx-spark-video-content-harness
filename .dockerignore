@@ -1,0 +1,19 @@
+# Keep the build context lean — the image rebuilds node_modules / dist / venv.
+node_modules
+dist
+out
+out-nuc
+.git
+.cache
+.qwen
+inputs
+agent/.venv
+**/__pycache__
+**/*.pyc
+*.log
+.env
+.env.local
+.DS_Store
+coverage
+tts-cache
+# dist - allow for dev build

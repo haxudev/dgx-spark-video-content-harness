@@ -1,0 +1,28 @@
+<div class="scene-eyebrow"><span class="num">④</span>爆冷可能性分析</div>
+<div class="scene-title">{{title}}</div>
+
+<div class="upset-wrap">
+  {{#with data.upset}}
+  <div class="upset-hero-card">
+    <div class="gauge-host" data-upset-gauge></div>
+    <div class="narr">
+      <span class="band">{{band}}</span>
+      <div class="fav">热门：<b>{{favTeam}}</b> · 可能性 {{favPct}}</div>
+      <div>{{upsetLabel}}（爆冷）综合可能性 <b>{{probPct}}</b>，模型不算一边倒。</div>
+    </div>
+  </div>
+
+  {{#if cards}}
+  <div class="upset-cards">
+    {{#each cards}}
+    <div class="upset-card tone-{{tone}}">
+      <div class="uk-label">{{label}}</div>
+      <div class="uk-value">{{value}}</div>
+      {{#if detail}}<div class="uk-detail">{{detail}}</div>{{/if}}
+      {{#if accentPct}}<div class="uk-bar"><div class="uk-fill" data-scale="{{multiply accentPct 0.01}}"></div></div>{{/if}}
+    </div>
+    {{/each}}
+  </div>
+  {{/if}}
+  {{/with}}
+</div>

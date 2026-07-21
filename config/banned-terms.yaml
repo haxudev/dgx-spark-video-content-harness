@@ -1,0 +1,32 @@
+# 拒绝词表: 命中即必须改写
+# 规则: 优先用通俗替换；若必须保留，必须紧跟 §glossary 通俗解释。
+banned:
+  - 协整
+  - 协整性
+  - PR-AUC
+  - CLV
+  - changepoint
+  - heavy-tail
+  - 重尾
+  - Hurst
+  - Hurst指数
+  - Markov
+  - 马尔可夫
+  - de-vig
+  - logit
+  - softmax
+  - 蒙特卡洛
+  - bootstrap
+  - 自助法
+  - falsification firewall
+  - GBDT-only
+  # 彩票/博彩类绝对禁用
+  - 稳胆
+  - 推荐
+  - 建议
+  - 下注
+  - 投注
+  - 买
+  - 购买
+  - 押注
+  - 押

@@ -1,0 +1,10 @@
+# Microsoft Agent Framework harness agent — lean dependency set.
+# agent-framework-openai pulls agent-framework-core (Agent, create_harness_agent,
+#   tool, agent_framework.openai.OpenAIChatClient) + the openai SDK.
+# agent-framework-foundry-hosting pulls core + the RESPONSES server; it imports
+#   `mcp` (declared only in core's [all] extra) so we pin it explicitly.
+# This avoids the agent-framework[all] meta extras (boto3/google/anthropic/...).
+agent-framework-openai>=1.8.1
+agent-framework-foundry-hosting>=1.0.0a260609
+mcp>=1.24.0,<2
+python-dotenv>=1.0.0

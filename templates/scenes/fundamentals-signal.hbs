@@ -1,0 +1,52 @@
+<div class="scene-eyebrow"><span class="num">②</span>基本面与风向标</div>
+<div class="scene-title">{{title}}</div>
+
+<div class="fs-wrap">
+  {{#with data.fundamentals}}
+  <div class="fs-teams">
+    <div class="fs-team home">
+      <div class="fs-team-top"><span class="fs-role">主队</span><span class="fs-name">{{homeName}}</span></div>
+      <div class="fs-team-stats">
+        {{#each homeStats.kvStats}}
+        <div class="fs-stat"><div class="fs-stat-v">{{value}}</div><div class="fs-stat-l">{{label}}</div></div>
+        {{/each}}
+      </div>
+    </div>
+    <div class="fs-vs">VS</div>
+    <div class="fs-team away">
+      <div class="fs-team-top"><span class="fs-role away">客队</span><span class="fs-name away">{{awayName}}</span></div>
+      <div class="fs-team-stats">
+        {{#each awayStats.kvStats}}
+        <div class="fs-stat"><div class="fs-stat-v">{{value}}</div><div class="fs-stat-l">{{label}}</div></div>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+  {{/with}}
+
+  <div class="fs-panel">
+    <div class="fs-head">
+      风向标 · 胜负平可能性
+      <span class="fs-legend">
+        {{#if data.marketSignal.hasImplied}}<span class="sw imp"></span>隐含{{/if}}
+        {{#if data.marketSignal.hasFair}}<span class="sw fair"></span>公允{{/if}}
+        <span class="sw model"></span>模型
+      </span>
+    </div>
+    <div class="ec-host" data-fs-signal></div>
+    {{#if data.marketSignal.drift}}
+    <div class="fs-drift">
+      <div class="fs-drift-title">赛前概率漂移</div>
+      <div class="fs-drift-row">
+        {{#each data.marketSignal.drift}}
+        <div class="fs-drift-card dir-{{dir}}">
+          <div class="fdc-role">{{role}}</div>
+          <div class="fdc-flow"><span class="fdc-open">{{fixed open 1}}%</span><span class="fdc-arrow">→</span><span class="fdc-last">{{fixed last 1}}%</span></div>
+          <div class="fdc-delta">{{dirSymbol dir}} {{fixed absDelta 1}}pp</div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+  </div>
+</div>
