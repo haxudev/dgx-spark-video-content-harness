@@ -1,4 +1,4 @@
-# podcast-football Agent Guide
+# dgx-spark-video-content-harness Agent Guide
 
 This project turns football data/probability HTML reports into Chinese dual-host vertical videos. It is intentionally CLI-first so minimal coding agents such as pi can operate without MCP.
 

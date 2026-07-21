@@ -2,7 +2,7 @@
 name: football-talktrack
 description: |
   Authors the Chinese spoken script for football data-observation videos in the
-  podcast-football harness WRITE phase. v2 is AGENT-FIRST: a single LLM call
+  dgx-spark-video-content-harness harness WRITE phase. v2 is AGENT-FIRST: a single LLM call
   freely writes the whole conclusion-first four-act script per match (podcast
   dual-host OR monologue single-host); a deterministic template is only the
   offline / LLM-failure fallback. Structure-agnostic — driven by a market-

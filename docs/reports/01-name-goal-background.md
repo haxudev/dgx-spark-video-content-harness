@@ -8,7 +8,7 @@
 
 **中文名**：AI 球赛观察 · 足球数据观察短视频自动生产线
 
-**代号 / 仓库名**：`podcast-football`（agent-first 足球数据观察视频 harness）
+**代号 / 仓库名**：`dgx-spark-video-content-harness`（agent-first 足球数据观察视频 harness）
 
 **一句话定位**：把一份「结构任意」的足球单场分析报告（HTML），自动加工成 3–6 分钟、中文口播、9:16 竖屏、合规标注完整的成片 MP4。
 
@@ -16,13 +16,13 @@
 
 | 风格             | 内部代号`ScriptMode` | 形态                              | 对应本次交付的版本                                       |
 | ---------------- | ---------------------- | --------------------------------- | -------------------------------------------------------- |
-| 双人播客对谈     | `podcast`            | 男女双主持（小美 + 小帅）逐场深聊 | **双人播客版**（`podcast-football-v2-dualhost`） |
+| 双人播客对谈     | `podcast`            | 男女双主持（小美 + 小帅）逐场深聊 | **双人播客版**（`dgx-spark-video-content-harness-v2-dualhost`） |
 | 单人第一人称解说 | `monologue`          | 一位「解局人」悬念口播            | 与双人版共用一套四幕 deck                                |
 
-> 本次从 `https://github.com/haxudev/podcast-football` 拉取到本地的两个版本：
+> 本次从 `https://github.com/haxudev/dgx-spark-video-content-harness` 拉取到本地的两个版本：
 >
-> - **双人播客版**（`podcast`/v2）→ `podcast-football-v2-dualhost/`（`v2` 分支 `9f7b095`）
-> - 另保留最初的原型种子提交 → `podcast-football/`（`main` 分支 `e04d143`，最早的双人对谈雏形）
+> - **双人播客版**（`podcast`/v2）→ `dgx-spark-video-content-harness-v2-dualhost/`（`v2` 分支 `9f7b095`）
+> - 另保留最初的原型种子提交 → `dgx-spark-video-content-harness/`（`main` 分支 `e04d143`，最早的双人对谈雏形）
 
 ---
 
