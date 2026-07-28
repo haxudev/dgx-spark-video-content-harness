@@ -126,7 +126,7 @@ Providers are tried in order **GX10 → Azure** based on env vars. Both currentl
 
 | Provider | Endpoint | Model | Status | When to pick |
 |---|---|---|---|---|
-| **GX10** primary | `http://gx10.haxu.home:8000/v1` | `qwen3.6-35b` (thinking) | ✅ reachable, but **too slow** for WRITE phase even with `GX10_THINKING_EFFORT=low` (returns reasoning, budget padded 2×+400). `chatJson` retries 2× → multi-minute per scene → 600 s timeout. | Single-scene exploratory probes only. |
+| **GX10** primary | `http://gx10.haxu.home:8000/v1` | `stepfun` (thinking) | ✅ reachable, but **too slow** for WRITE phase even with `GX10_THINKING_EFFORT=low` (returns reasoning, budget padded 2×+400). `chatJson` retries 2× → multi-minute per scene → 600 s timeout. | Single-scene exploratory probes only. |
 | **Azure OpenAI** fallback | `https://haxuaifoundryaiservice.openai.azure.com/openai/v1` | `gpt-5.4` | ✅ current WRITE backend, reliable JSON-mode. | Default. Triggered by blanking GX10 chat vars. |
 | Deterministic templates | — | — | Built-in fallback when `HARNESS_DISABLE_LLM=1` or all providers fail. | Air-gapped tests or CI smoke. |
 
@@ -198,7 +198,7 @@ Total: ~15 min cold, ~5 min warm (TTS cache hot, no LLM re-write).
 
 The video has **no on-screen dialogue subtitles**. A looping digital-human clip sits in a framed full-width card at the bottom of the 1080×1920 frame (geometry in `src/tools/avatarLayout.ts`). The deck is now **identical for podcast and monologue** — only the script, voice and avatar image differ.
 
-**The pipeline is cache-only.** The `AVATAR` phase *consumes* a pre-generated clip from a **version-controlled material library** (`assets/avatar-clips/`) and **never calls longcat** — guaranteeing a normal `harness run` can never pause the co-located qwen3.6 brain. Generation is a separate, deliberate operator step (`harness avatar-prewarm`), the only command that pauses qwen.
+**The pipeline is cache-only.** The `AVATAR` phase *consumes* a pre-generated clip from a **version-controlled material library** (`assets/avatar-clips/`) and **never calls longcat** — guaranteeing a normal `harness run` can never pause the co-located stepfun brain. Generation is a separate, deliberate operator step (`harness avatar-prewarm`), the only command that pauses stepfun.
 
 ```bash
 # Normal run — pure consume, no network, no brain impact. Ships the matching
@@ -298,7 +298,7 @@ curl -sN http://localhost:8089/responses -H 'content-type: application/json' \
 
 Key facts:
 
-- **Brain** = GX10 `qwen3.6-35b` (OpenAI-compatible, reuses `GX10_OPENAI_*`); a
+- **Brain** = GX10 `stepfun` (OpenAI-compatible, reuses `GX10_OPENAI_*`); a
   single 35B-friendly tool `generate_match_video(report_url, mode, profile,
   cover, skip_render, voice/voice_male/voice_female/voice_narrator)`. The voice
   params are optional Qwen3-TTS named-voice overrides (mapped to `--voice*`

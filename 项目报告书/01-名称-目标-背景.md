@@ -1,6 +1,6 @@
 # 项目报告书（一）· 名称 · 目标 · 背景
 
-> 配套文档：`02-作品介绍-功能与亮点.md`、`03-Nvidia DGX Spark-qwen3.6-使用详情.md`、`04-分镜脚本.md`、`05-开发复盘-团队故事.md`
+> 配套文档：`02-作品介绍-功能与亮点.md`、`03-Nvidia DGX Spark-stepfun-使用详情.md`、`04-分镜脚本.md`、`05-开发复盘-团队故事.md`
 
 ---
 
@@ -68,7 +68,7 @@
 
 本项目诞生的另一半背景，是团队手里握有一套**本地私有的 AI 基础设施 —— Nvidia DGX Spark**：
 
-- **Nvidia DGX Spark = 一台本地推理网关**，以 OpenAI 兼容协议对外服务，托管着 **Qwen3.6-35B「思考型」大模型**（`http://Nvidia DGX Spark.haxu.home:8000/v1`），同时还统一网关了 **Qwen3-TTS 语音合成**（音色注册 / ICL 克隆）与 **LongCat-Video-Avatar 数字人**能力。
+- **Nvidia DGX Spark = 一台本地推理网关**，以 OpenAI 兼容协议对外服务，托管着 **stepfun「思考型」大模型**（`http://Nvidia DGX Spark.haxu.home:8000/v1`），同时还统一网关了 **Qwen3-TTS 语音合成**（音色注册 / ICL 克隆）与 **LongCat-Video-Avatar 数字人**能力。
 - 这台机器上「大脑（LLM）」「嗓子（TTS）」「脸（数字人）」共享同一批 GPU，谁用谁占显存——这既是成本优势（自有算力、可克隆专属音色、数据不出内网），也是本项目一系列独特工程设计（时间片让渡、缓存-only 消费、思考预算裁剪）的根本约束来源。
 
-正是「**内容生产刚需**」与「**本地 Nvidia DGX Spark 私有算力**」两者叠加，催生了这条以 Nvidia DGX Spark Qwen3.6 为核心大脑、以合规为第一约束、以 agent 全自动驱动的短视频生产线。
+正是「**内容生产刚需**」与「**本地 Nvidia DGX Spark 私有算力**」两者叠加，催生了这条以 Nvidia DGX Spark stepfun 为核心大脑、以合规为第一约束、以 agent 全自动驱动的短视频生产线。

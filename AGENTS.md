@@ -80,7 +80,7 @@ The video carries **no on-screen dialogue subtitles**. Instead a looping **digit
 
 - A container image wraps the **unchanged** harness behind a Microsoft Agent Framework *harness agent* (`create_harness_agent`) served over the Foundry **RESPONSES** protocol on port 8088 (`POST /responses`). Code lives in `agent/`; see `agent/README.md` and `docs/runbook-execution.md` §9.
 - Upstream passes `report_url` + style params (`mode`, `profile`, `cover`, `skip_render`, and optional Qwen3-TTS `voice`/`voice_male`/`voice_female`/`voice_narrator`) to a single 35B-friendly tool `generate_match_video`, which calls `harness fetch` + `harness run --url … --result-json …` and returns the `mp4Path` (under the bind-mounted `out/`).
-- The agent **brain** is GX10 `qwen3.6-35b` (reuses `GX10_OPENAI_*`); the pipeline `WRITE` phase keeps its own GX10→Azure chain. Run with `docker compose up` (WSL Docker; defaults to `network_mode: host` to reach `gx10.haxu.home`).
+- The agent **brain** is GX10 `stepfun` (reuses `GX10_OPENAI_*`); the pipeline `WRITE` phase keeps its own GX10→Azure chain. Run with `docker compose up` (WSL Docker; defaults to `network_mode: host` to reach `gx10.haxu.home`).
 - Lean MAF deps only: `agent-framework-openai` + `agent-framework-foundry-hosting` + `mcp` — never the `agent-framework[all]` meta (multi-GB).
 - New harness CLI surface (also usable standalone): `harness fetch <url> [out]` (puppeteer SPA render) and `harness run --url <url> --result-json <file>`.
 

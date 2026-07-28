@@ -1,6 +1,6 @@
 # 基于英伟达Spark的Agent-Driven全自动数据洞察数字人解读视频内容生产线
 
-> **DGX Spark (Qwen3.6-35B) 驱动的 agent-first 数据观察短视频自动生产线**
+> **DGX Spark (stepfun) 驱动的 agent-first 数据观察短视频自动生产线**
 > Input: 任意结构的 HTML 单场分析报告 / `--url` 网页 / 一整天的赛前预测数据
 > Output: 3–6 分钟、中文口播、9:16 竖屏、合规标注完整的成片 MP4
 
@@ -56,9 +56,9 @@ INGEST → PLAN → WRITE → VERIFY_TEXT → AUDIT_TALK → TTS → VERIFY_AUDI
        → AVATAR → COMPOSE → VERIFY_VISUAL → RENDER → VERIFY_AV → AUDIT_VISUAL → POST
 ```
 
-## DGX Spark / Qwen3.6 的角色
+## DGX Spark / stepfun 的角色
 
-**DGX Spark（内网代号 `GX10`）是团队本地的私有 AI 推理网关**，以 OpenAI 兼容协议对外服务，同时承载 **Qwen3.6-35B「思考型」大脑**、**Qwen3-TTS 语音合成** 与 **LongCat-Video-Avatar 数字人**——三者共享同一批 GPU。Qwen3.6 出现在三个位置：① WRITE 写稿大脑；② MAF 托管 agent 的编排大脑；③ 与数字人生成的 GPU 时间片让渡。详见 [`项目报告书/`](项目报告书/)。
+**DGX Spark（内网代号 `GX10`）是团队本地的私有 AI 推理网关**，以 OpenAI 兼容协议对外服务，同时承载 **stepfun「思考型」大脑**、**Qwen3-TTS 语音合成** 与 **LongCat-Video-Avatar 数字人**——三者共享同一批 GPU。stepfun 出现在三个位置：① WRITE 写稿大脑；② MAF 托管 agent 的编排大脑；③ 与数字人生成的 GPU 时间片让渡。详见 [`项目报告书/`](项目报告书/)。
 
 > ⚠️ 运维要点：思考模型对逐幕 WRITE 太慢（易撞超时），标准做法是**在命令行把 `GX10_*` 变量置空**强制回退 Azure 快模型（`dotenv` 只填未设置的变量，故空字符串会压过 `.env`）。详见 `docs/runbook-execution.md`。
 

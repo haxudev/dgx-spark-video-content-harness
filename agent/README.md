@@ -6,7 +6,7 @@ the **Foundry RESPONSES protocol**; the agent fetches the report, runs the full
 agent-first pipeline, and produces a 1080×1920 narrated `final.mp4`.
 
 ```
-RESPONSES :8088  ─▶  create_harness_agent (GX10 qwen3.6-35b)
+RESPONSES :8088  ─▶  create_harness_agent (GX10 stepfun)
                         └─ tool: generate_match_video(report_url, mode, profile, cover, skip_render, voice…)
                               └─ node /app/dist/cli.js run --url … --result-json …   (unchanged 13-phase pipeline)
                                     └─ /app/out/<bucket>/<base>/final.mp4

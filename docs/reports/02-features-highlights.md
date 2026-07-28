@@ -1,6 +1,6 @@
 # 项目报告书（二）· 作品介绍：功能与亮点
 
-> 配套文档：`01-名称-目标-背景.md`、`03-GX10-qwen3.6-使用详情.md`、`04-分镜脚本.md`、`05-开发复盘-团队故事.md`
+> 配套文档：`01-名称-目标-背景.md`、`03-dgx-spark-stepfun.md`、`04-分镜脚本.md`、`05-开发复盘-团队故事.md`
 
 ---
 
@@ -57,7 +57,7 @@ INGEST → PLAN → WRITE → VERIFY_TEXT → AUDIT_TALK → TTS → VERIFY_AUDI
 
 ### 亮点 1 · Agent 现场创作，不是套模板
 
-WRITE 阶段是**真正的「一次成稿」LLM 创作**：一整段「结论先行」的 prompt 让 GX10 Qwen3.6 看着「市场派生的简报」现场把整篇稿子写出来，先抛结论、再层层展开。关键防退化设计：
+WRITE 阶段是**真正的「一次成稿」LLM 创作**：一整段「结论先行」的 prompt 让 GX10 stepfun 看着「市场派生的简报」现场把整篇稿子写出来，先抛结论、再层层展开。关键防退化设计：
 
 - **`creativeSeed` 随机种子**：让同一场比赛、甚至重复跑同一份数据，也能写出不同措辞的稿子（可用 `HARNESS_WRITE_SEED` 钉死以便复现）。
 - **`retries: 2`（共 3 次）**：provider 抖动时坚持重试 agent，绝不悄悄退回「每场雷同」的模板。
@@ -95,7 +95,7 @@ WRITE 阶段是**真正的「一次成稿」LLM 创作**：一整段「结论先
 | 能力                       | 说明                                                                                                                               |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | **CLI 优先、无 MCP** | 稳定接口是`harness` 命令行，任意 coding-agent / MAF agent 都能直接驱动                                                                          |
-| **MAF 托管 agent**   | 容器化封装成 Microsoft Agent Framework agent，RESPONSES 协议 :8088，暴露`generate_match_video` 单工具，大脑仍是 GX10 Qwen3.6-35B |
+| **MAF 托管 agent**   | 容器化封装成 Microsoft Agent Framework agent，RESPONSES 协议 :8088，暴露`generate_match_video` 单工具，大脑仍是 GX10 stepfun |
 | **优雅降级**         | 无 LLM→模板；无 TTS→占位音；无 Chrome→跳过渲染；数字人缺失→占位带（WARN 不阻塞）                                               |
 | **断点续跑**         | 每阶段产物落盘`out/`，`--from/--to` 任意区间重跑，TTS 结果按内容 SHA 缓存                                                      |
 | **Jina Reader 抓取** | `scripts/fetch-jina.mjs` 把任意 URL 转成 LLM 友好的 Markdown/HTML 入库                                                           |
@@ -106,7 +106,7 @@ WRITE 阶段是**真正的「一次成稿」LLM 创作**：一整段「结论先
 ## 五、技术栈一览
 
 - **语言 / 运行时**：TypeScript（ESM）、Node.js ≥ 22
-- **大模型**：GX10 本地 **Qwen3.6-35B**（思考型，OpenAI 兼容）→ Azure `gpt-5.4` 兜底
+- **大模型**：GX10 本地 **stepfun**（思考型，OpenAI 兼容）→ Azure `gpt-5.4` 兜底
 - **语音**：**Qwen3-TTS**（CustomVoice / ICL 克隆 / x-vector）→ Azure Speech 兜底 → 正弦占位
 - **数字人**：**LongCat-Video-Avatar**（GX10 网关）
 - **AI 美术**：Azure **gpt-image-2**（封面 / 背景 / 队徽）
