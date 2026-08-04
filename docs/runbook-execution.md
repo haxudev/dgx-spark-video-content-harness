@@ -1,6 +1,6 @@
 # Execution Runbook — proven recipes & gotchas
 
-This runbook captures the **actually working** invocation for the `dgx-spark-video-content-harness` harness on this machine (haxu / linux / 2026-05). Keep it tight: only things confirmed end-to-end on a real report.
+This runbook captures the **actually working** invocation for the `match-insight-harness` harness on this machine (haxu / linux / 2026-05). Keep it tight: only things confirmed end-to-end on a real report.
 
 Reference run: `inputs/20260523/2026-05-23_fiorentina-vs-atalanta.html`
 → `out/20260523/2026-05-23_fiorentina-vs-atalanta/final.mp4` (173.2 s, 6 scenes, 1080×1920, h264+aac).

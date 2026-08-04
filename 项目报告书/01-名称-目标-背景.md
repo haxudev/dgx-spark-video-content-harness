@@ -1,14 +1,16 @@
 # 项目报告书（一）· 名称 · 目标 · 背景
 
-> 配套文档：`02-作品介绍-功能与亮点.md`、`03-Nvidia DGX Spark-stepfun-使用详情.md`、`04-分镜脚本.md`、`05-开发复盘-团队故事.md`
+> 配套文档：`02-作品介绍-功能与亮点.md`、`03-GX10-stepfun-使用详情.md`、`04-分镜脚本.md`、`05-开发复盘-团队故事.md`
 
 ---
 
 ## 一、项目名称
 
-**中文名**：AI 球赛观察 · 足球数据观察短视频自动生产线
+**中文名**：AI 球赛观察 · 数据洞察数字人视频生产线
 
-**代号 / 仓库名**：`dgx-spark-video-content-harness`（agent-first 足球数据观察视频 harness）
+**代号 / 仓库名**：`match-insight-harness`（agent-first 足球数据观察视频 harness）
+
+**参赛场景**：外滩黑客松参赛作品。
 
 **一句话定位**：把一份「结构任意」的足球单场分析报告（HTML），自动加工成 3–6 分钟、中文口播、9:16 竖屏、合规标注完整的成片 MP4。
 
@@ -16,13 +18,13 @@
 
 | 风格             | 内部代号`ScriptMode` | 形态                              | 对应本次交付的版本                                       |
 | ---------------- | ---------------------- | --------------------------------- | -------------------------------------------------------- |
-| 双人播客对谈     | `podcast`            | 男女双主持（小美 + 小帅）逐场深聊 | **双人播客版**（`dgx-spark-video-content-harness-v2-dualhost`） |
+| 双人播客对谈     | `podcast`            | 男女双主持（小美 + 小帅）逐场深聊 | **双人播客版**（`match-insight-harness-v2-dualhost`） |
 | 单人第一人称解说 | `monologue`          | 一位「解局人」悬念口播            | 与双人版共用一套四幕 deck                                |
 
-> 本次从 `https://github.com/haxudev/dgx-spark-video-content-harness` 拉取到本地的两个版本：
+> 本次交付拉取到本地的两个版本：
 >
-> - **双人播客版**（`podcast`/v2）→ `dgx-spark-video-content-harness-v2-dualhost/`（`v2` 分支 `9f7b095`）
-> - 另保留最初的原型种子提交 → `dgx-spark-video-content-harness/`（`main` 分支 `e04d143`，最早的双人对谈雏形）
+> - **双人播客版**（`podcast`/v2）→ `match-insight-harness-v2-dualhost/`（`v2` 分支 `9f7b095`）
+> - 另保留最初的原型种子提交 → `match-insight-harness/`（`main` 分支 `e04d143`，最早的双人对谈雏形）
 
 ---
 
@@ -66,9 +68,9 @@
 
 ### 3.2 技术背景
 
-本项目诞生的另一半背景，是团队手里握有一套**本地私有的 AI 基础设施 —— Nvidia DGX Spark**：
+本项目诞生的另一半背景，是团队手里握有一套**本地私有的 AI 推理基础设施 —— 内网推理网关 `GX10`**：
 
-- **Nvidia DGX Spark = 一台本地推理网关**，以 OpenAI 兼容协议对外服务，托管着 **stepfun「思考型」大模型**（`http://Nvidia DGX Spark.haxu.home:8000/v1`），同时还统一网关了 **Qwen3-TTS 语音合成**（音色注册 / ICL 克隆）与 **LongCat-Video-Avatar 数字人**能力。
+- **GX10 = 一台本地推理网关**，以 OpenAI 兼容协议对外服务，托管着 **stepfun「思考型」大模型**（`http://gx10.haxu.home:8000/v1`），同时还统一网关了 **Qwen3-TTS 语音合成**（音色注册 / ICL 克隆）与 **LongCat-Video-Avatar 数字人**能力。
 - 这台机器上「大脑（LLM）」「嗓子（TTS）」「脸（数字人）」共享同一批 GPU，谁用谁占显存——这既是成本优势（自有算力、可克隆专属音色、数据不出内网），也是本项目一系列独特工程设计（时间片让渡、缓存-only 消费、思考预算裁剪）的根本约束来源。
 
-正是「**内容生产刚需**」与「**本地 Nvidia DGX Spark 私有算力**」两者叠加，催生了这条以 Nvidia DGX Spark stepfun 为核心大脑、以合规为第一约束、以 agent 全自动驱动的短视频生产线。
+正是「**内容生产刚需**」与「**本地私有算力**」两者叠加，催生了这条以 GX10 stepfun 为核心大脑、以合规为第一约束、以 agent 全自动驱动的短视频生产线。

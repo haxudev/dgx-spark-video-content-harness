@@ -1,4 +1,4 @@
-# dgx-spark-video-content-harness hosted agent
+# match-insight-harness hosted agent
 
 A container-based **Microsoft Agent Framework** *harness agent* that wraps the
 existing Node harness pipeline. Upstream sends a report URL (+ style params) over

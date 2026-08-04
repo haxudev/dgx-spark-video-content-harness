@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dgx-spark-video-content-harness · 项目报告书</title>
-  <meta name="description" content="DGX Spark (stepfun) 驱动的足球数据观察短视频自动生产线 · 项目报告书" />
+  <title>AI 球赛观察 · 项目报告书</title>
+  <meta name="description" content="AI 球赛观察 · 数据洞察数字人视频生产线 · 项目报告书" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css" />
   <style>
     :root {
@@ -143,7 +143,7 @@
     <button class="menu-toggle" id="menuToggle" aria-label="菜单">☰</button>
     <div class="brand">
       <span class="logo">⚽</span>
-      <span>dgx-spark-video-content-harness<br /><small>项目报告书 · DGX Spark (stepfun) 短视频生产线</small></span>
+      <span>AI 球赛观察<br /><small>项目报告书 · 数据洞察数字人视频生产线</small></span>
     </div>
     <div class="spacer"></div>
     <a class="gh" href="https://github.com/haxudev/dgx-spark-video-content-harness" target="_blank" rel="noopener">GitHub ↗</a>
@@ -166,7 +166,7 @@
     const REPORTS = [
       { id: "01", title: "名称 · 目标 · 背景", file: "reports/01-name-goal-background.md" },
       { id: "02", title: "作品介绍：功能与亮点", file: "reports/02-features-highlights.md" },
-      { id: "03", title: "DGX Spark stepfun 使用详情", file: "reports/03-dgx-spark-stepfun.md" },
+      { id: "03", title: "GX10 stepfun 使用详情", file: "reports/03-gx10-stepfun.md" },
     ];
 
     const navList = document.getElementById("navList");
@@ -256,7 +256,7 @@
         buildToc(report.id);
         renderPager(idx);
         window.scrollTo({ top: 0 });
-        document.title = report.title + " · dgx-spark-video-content-harness";
+        document.title = report.title + " · AI 球赛观察";
       } catch (err) {
         content.innerHTML = '<p class="loading">加载失败：' + err.message +
           '。请通过 GitHub Pages 访问本页面（本地直接打开 file:// 无法 fetch）。</p>';
